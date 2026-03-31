@@ -1,13 +1,15 @@
 # 🤖 AI RAG Chatbot — LLaMA 3.3 70B via Groq
 
 A production-grade **Retrieval-Augmented Generation (RAG)** chatbot built with:
-- 🦙 **LLaMA 3.3 70B** — powerful open-source LLM
+- 🤖 **LLaMA 3.3 70B** — powerful open-source LLM
 - ⚡ **Groq API** — world's fastest LLM inference (~300 tokens/sec)
 - 🗃️ **ChromaDB** — local vector database for semantic search
 - 🗄️ **SQLite** — chat history & document metadata storage
 - 📄 **Multi-format support** — PDF, DOCX, TXT, MD, CSV
 - 🎨 **Streamlit UI** — clean, dark-themed web interface
 
+👉 AI RAG Chatbot (Deployed App):
+https://ai-rag-chatbot-kqut4cmcnzjvrftxxwmtpk.streamlit.app/
 ---
 
 ## 🚀 Quick Start
@@ -15,7 +17,7 @@ A production-grade **Retrieval-Augmented Generation (RAG)** chatbot built with:
 ### 1. Clone the repo
 ```bash
 git clone https://github.com/yourusername/rag-chatbot.git
-cd  AI GAP-Chatbot
+cd  Ai-RAG-Chatbot
 ```
 
 ### 2. Install dependencies
