@@ -1,6 +1,7 @@
-# 🤖 AI GAP Chatbot — LLaMA 3.3 70B via Groq
+# 🤖 AI RAG Chatbot — LLaMA 3.3 70B via Groq
 
 A production-grade **Retrieval-Augmented Generation (RAG)** chatbot built with:
+
 - 🦙 **LLaMA 3.3 70B** — powerful open-source LLM
 - ⚡ **Groq API** — world's fastest LLM inference (~300 tokens/sec)
 - 🗃️ **ChromaDB** — local vector database for semantic search
@@ -13,28 +14,33 @@ A production-grade **Retrieval-Augmented Generation (RAG)** chatbot built with:
 ## 🚀 Quick Start
 
 ### 1. Clone the repo
+
 ```bash
 git clone https://github.com/yourusername/rag-chatbot.git
 cd  AI GAP-Chatbot
 ```
 
 ### 2. Install dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
 ### 3. Get your FREE Groq API Key
+
 1. Visit [console.groq.com](https://console.groq.com)
 2. Sign up (free, no credit card needed)
 3. Go to **API Keys** → Create new key
 
 ### 4. Set up environment
+
 ```bash
 cp .env.example .env
 # Edit .env and add your GROQ_API_KEY
 ```
 
 ### 5. Run the app
+
 ```bash
 streamlit run app.py
 ```
@@ -99,25 +105,25 @@ rag-chatbot/
 
 ## ⚙️ Configuration (.env)
 
-| Variable | Default | Description |
-|---|---|---|
-| `GROQ_API_KEY` | — | Your Groq API key (required) |
-| `LLAMA_MODEL` | `llama-3.3-70b-versatile` | Groq model to use |
-| `EMBED_MODEL` | `all-MiniLM-L6-v2` | Sentence transformer model |
-| `TOP_K_CHUNKS` | `4` | Number of chunks to retrieve |
-| `CHROMA_DB_PATH` | `./chroma_store` | ChromaDB storage path |
+| Variable           | Default                     | Description                  |
+| ------------------ | --------------------------- | ---------------------------- |
+| `GROQ_API_KEY`   | —                          | Your Groq API key (required) |
+| `LLAMA_MODEL`    | `llama-3.3-70b-versatile` | Groq model to use            |
+| `EMBED_MODEL`    | `all-MiniLM-L6-v2`        | Sentence transformer model   |
+| `TOP_K_CHUNKS`   | `4`                       | Number of chunks to retrieve |
+| `CHROMA_DB_PATH` | `./chroma_store`          | ChromaDB storage path        |
 
 ---
 
 ## 🧠 Tech Decisions
 
-| Decision | Reason |
-|---|---|
-| **Groq instead of OpenAI** | Free tier, 10x faster, no credit card |
-| **LLaMA 3.3 70B** | Open-source, near GPT-4 quality, free |
-| **ChromaDB** | Local vector DB, no external service needed |
-| **SQLite** | Zero-config persistence for chat history |
-| **sentence-transformers** | Free, runs locally, high quality embeddings |
+| Decision                         | Reason                                      |
+| -------------------------------- | ------------------------------------------- |
+| **Groq instead of OpenAI** | Free tier, 10x faster, no credit card       |
+| **LLaMA 3.3 70B**          | Open-source, near GPT-4 quality, free       |
+| **ChromaDB**               | Local vector DB, no external service needed |
+| **SQLite**                 | Zero-config persistence for chat history    |
+| **sentence-transformers**  | Free, runs locally, high quality embeddings |
 
 > 💡 Designed to be easily swappable — replace Groq with OpenAI or Claude by editing `llm/groq_client.py`
 
@@ -135,4 +141,5 @@ railway up
 ---
 
 ## 📝 License
+
 MIT — free to use and modify.
