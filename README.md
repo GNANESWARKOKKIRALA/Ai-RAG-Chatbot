@@ -51,6 +51,42 @@ Open `http://localhost:8501` in your browser 🎉
 
 ## 🏗️ Architecture
 
+```mermaid
+graph TD
+    subgraph Client [Client UI]
+        U[Streamlit App / app.py]
+    end
+
+    subgraph Logic [Application Logic]
+        L[Document Loader / loader.py]
+        C[Text Chunker / chunker.py]
+        E[Embedder / embedder.py]
+        R[Retriever / retriever.py]
+        G[Groq Client / groq_client.py]
+    end
+
+    subgraph Storage [Data & LLM API]
+        DB[(SQLite DB / History & Auth)]
+        VS[(ChromaDB / Vector Store)]
+        LLM[Groq LLaMA 3.3 API]
+    end
+
+    %% Flow lines
+    U -->|Upload Files| L
+    L -->|Raw Text| C
+    C -->|Text Chunks| E
+    E -->|Vectors| VS
+
+    U -->|User Queries| R
+    R -->|Query Vector| E
+    R -->|Cosine Search| VS
+    R -->|Retrieved Context| G
+    
+    U -->|Save & Load History| DB
+    G -->|Stream Responses| U
+    G <-->|Inference Requests| LLM
+```
+
 ```
 User uploads PDF/DOCX/TXT/CSV
          ↓
