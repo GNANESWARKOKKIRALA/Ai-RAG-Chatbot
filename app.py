@@ -407,6 +407,34 @@ def show_chatbot() -> None:
                 conn.commit()
                 conn.close()
                 st.rerun()
+        st.divider()
+        with st.expander("📐 System Architecture Blueprint", expanded=False):
+            st.markdown("""
+            ### System Flow Chart
+            
+            ```mermaid
+            graph TD
+                U[User Client] -->|Login/Session| Auth[Auth Layer]
+                Auth -->|Credentials| SQLite[(SQLite DB)]
+                
+                U -->|Upload Files| Loader[Document Parser]
+                Loader --> Chunker[Text Chunker]
+                Chunker --> Embedder[Local Embedder]
+                Embedder --> Chroma[(ChromaDB Vector Store)]
+                
+                U -->|Chat Prompt| Retriever[Retriever]
+                Retriever -->|Embed Query| Embedder
+                Retriever -->|Similarity Search| Chroma
+                Retriever -->|Inject Context| Groq[Groq LLaMA 3.3 Client]
+                
+                U -->|Conversation History| SQLite
+                Groq -->|Stream Tokens| U
+            ```
+            
+            #### Core Storage Systems:
+            *   **ChromaDB**: Holds 384-dimensional sentence-transformers embeddings.
+            *   **SQLite**: Saves encrypted password hashes and chat history messages per-user.
+            """)
 
         st.divider()
         st.markdown(
