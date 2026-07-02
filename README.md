@@ -17,7 +17,7 @@ A production-grade **Retrieval-Augmented Generation (RAG)** chatbot built with:
 
 ```bash
 git clone https://github.com/yourusername/rag-chatbot.git
-cd  AI GAP-Chatbot
+cd  AI RAG-Chatbot
 ```
 
 ### 2. Install dependencies
