@@ -111,19 +111,31 @@ html, body, [class*="css"] {{
     font-family: 'Inter', sans-serif; 
 }}
 
+/* Hide Streamlit default header and footer */
+header[data-testid="stHeader"] {{
+    display: none !important;
+}}
+footer {{
+    display: none !important;
+}}
+
 .stApp {{ 
     background-color: var(--chat-bg) !important; 
     color: var(--text-color) !important; 
 }}
 
-/* Sidebar styling */
+/* Sidebar styling (fixed to 260px) */
 section[data-testid="stSidebar"] {{
     background-color: var(--sidebar-bg) !important;
     border-right: 1px solid var(--border-color) !important;
+    width: 260px !important;
+    min-width: 260px !important;
+    max-width: 260px !important;
+    transition: width 200ms ease, min-width 200ms ease, max-width 200ms ease !important;
 }}
 
 section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {{
-    padding-top: 1.5rem !important;
+    padding-top: 1rem !important;
 }}
 
 /* Scrollbars */
@@ -148,7 +160,7 @@ section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {{
     align-items: center;
     gap: 10px;
     padding: 10px 4px;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
 }}
 .brand-logo {{
     width: 32px;
@@ -177,7 +189,6 @@ section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {{
     border-radius: 20px !important;
     font-weight: 500 !important;
     padding: 8px 16px !important;
-    transition: all 0.2s ease-in-out !important;
     width: 100% !important;
 }}
 .stButton > button:hover {{
@@ -247,22 +258,32 @@ section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {{
     margin-bottom: 4px;
 }}
 
-/* ChatGPT Style Welcome Page */
+/* ChatGPT Style Welcome Page (Vertically Centered) */
 .chatgpt-welcome-container {{
     text-align: center;
-    padding: 80px 20px 40px 20px;
+    padding-bottom: 24px;
 }}
 .chatgpt-welcome-icon {{
-    font-size: 2.5rem;
-    margin-bottom: 16px;
+    font-size: 2.8rem;
+    margin-bottom: 12px;
     display: inline-block;
     color: var(--text-color);
 }}
 .chatgpt-welcome-title {{
-    font-size: 2.2rem !important;
+    font-size: 2rem !important;
     font-weight: 700 !important;
     color: var(--text-color) !important;
     letter-spacing: -0.5px !important;
+}}
+
+/* Center the main container vertically when welcome page is active */
+.main .block-container:has(.chatgpt-welcome-container) {{
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    min-height: 85vh !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
 }}
 
 /* Suggestion Buttons in Main Chat area (styled like boxes) */
@@ -271,13 +292,13 @@ section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {{
     background-color: transparent !important;
     color: var(--text-color) !important;
     border-radius: 12px !important;
-    padding: 12px 16px !important;
+    padding: 12px 14px !important;
     text-align: left !important;
-    font-size: 0.88rem !important;
+    font-size: 0.85rem !important;
     display: block !important;
     width: 100% !important;
-    min-height: 54px !important;
-    transition: background-color 0.2s ease, border-color 0.2s ease !important;
+    min-height: 48px !important;
+    line-height: 1.3 !important;
 }}
 .main .stButton > button:hover {{
     background-color: var(--input-bg) !important;
@@ -286,7 +307,7 @@ section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {{
 
 /* Center Chat Area Width constraint */
 .main .block-container {{
-    max-width: 800px !important;
+    max-width: 768px !important;
     margin: 0 auto !important;
     padding-left: 1.5rem !important;
     padding-right: 1.5rem !important;
@@ -298,8 +319,8 @@ section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {{
 div[data-testid="stChatMessage"] {{
     background-color: var(--chat-bg) !important;
     border: none !important;
-    padding: 1.2rem 0.5rem !important;
-    margin-bottom: 1.5rem !important;
+    padding: 1rem 0.5rem !important;
+    margin-bottom: 1rem !important;
     border-bottom: 1px solid var(--border-color) !important;
     border-radius: 0px !important;
 }}
@@ -310,7 +331,7 @@ div[data-testid="stChatMessage"]:has(span:contains("🧑")),
 div[data-testid="stChatMessage"]:has(div[data-testid="stChatMessageAvatar"] span:contains("🧑")) {{
     background-color: var(--msg-user-bg) !important;
     border-radius: 16px !important;
-    padding: 1.2rem !important;
+    padding: 1rem !important;
     border: none !important;
 }}
 
@@ -327,13 +348,13 @@ div[data-testid="stChatMessageContent"] {{
     line-height: 1.6 !important;
 }}
 
-/* ChatGPT Styled Input Bar */
+/* ChatGPT Styled Input Bar with internal icons */
 div[data-testid="stChatInput"] {{
     background-color: var(--chat-bg) !important;
     border: none !important;
     padding-bottom: 24px !important;
     padding-top: 10px !important;
-    max-width: 800px !important;
+    max-width: 768px !important;
     margin: 0 auto !important;
 }}
 div[data-testid="stChatInput"] > div {{
@@ -341,18 +362,52 @@ div[data-testid="stChatInput"] > div {{
     border: 1px solid var(--border-color) !important;
     border-radius: 26px !important;
     padding: 6px 12px !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03) !important;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03) !important;
+    position: relative !important;
 }}
 div[data-testid="stChatInput"] > div:focus-within {{
     border-color: var(--accent-color) !important;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06) !important;
 }}
+
+/* Inject paperclip attach icon on left */
+div[data-testid="stChatInput"] > div::before {{
+    content: "📎" !important;
+    position: absolute !important;
+    left: 16px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    font-size: 1.05rem !important;
+    color: var(--secondary-text) !important;
+    opacity: 0.65 !important;
+    cursor: pointer !important;
+    pointer-events: none !important;
+    z-index: 10 !important;
+}}
+
+/* Inject microphone voice icon on right */
+div[data-testid="stChatInput"] > div::after {{
+    content: "🎤" !important;
+    position: absolute !important;
+    right: 56px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    font-size: 1.05rem !important;
+    color: var(--secondary-text) !important;
+    opacity: 0.65 !important;
+    cursor: pointer !important;
+    pointer-events: none !important;
+    z-index: 10 !important;
+}}
+
 div[data-testid="stChatInput"] textarea {{
     background-color: transparent !important;
     color: var(--text-color) !important;
     font-size: 1rem !important;
     line-height: 1.5 !important;
+    padding-left: 42px !important;
+    padding-right: 80px !important;
+    border: none !important;
 }}
 
 /* Tables */
@@ -389,16 +444,16 @@ pre code {{
     background-color: transparent !important;
 }}
 
-/* Drag & Drop File Uploader */
+/* Collapsible File Uploader Adjustments */
 div[data-testid="stFileUploader"] {{
     background: var(--input-bg) !important;
     border: 1px dashed var(--border-color) !important;
     border-radius: 12px !important;
-    padding: 12px !important;
-    transition: all 0.2s ease !important;
+    padding: 8px !important;
+    font-size: 0.8rem !important;
 }}
-div[data-testid="stFileUploader"]:hover {{
-    border-color: var(--accent-color) !important;
+div[data-testid="stFileUploader"] section {{
+    padding: 8px !important;
 }}
 
 /* Source badges */
@@ -488,9 +543,15 @@ div[data-testid="stFileUploader"]:hover {{
     font-weight: 600;
 }}
 
+/* Smooth transitions */
+.stButton > button, div[data-testid="stChatInput"] > div, .doc-chip-sidebar, .source-badge, section[data-testid="stSidebar"] {{
+    transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease, box-shadow 200ms ease !important;
+}}
+
 /* Mobile responsiveness */
 @media (max-width: 768px) {{
     .chatgpt-welcome-title {{ font-size: 1.6rem !important; }}
+    div[data-testid="stChatInput"] {{ width: 100% !important; left: 0 !important; }}
 }}
 </style>
 """, unsafe_allow_html=True)
@@ -617,39 +678,39 @@ def show_chatbot() -> None:
 
         st.divider()
 
-        # Document upload panel
-        st.markdown("### 📂 Upload Documents")
-        uploaded_files = st.file_uploader(
-            "Drag & drop or browse",
-            type=["pdf", "txt", "md", "docx", "csv"],
-            accept_multiple_files=True,
-            label_visibility="collapsed"
-        )
+        # Collapsible Document upload panel
+        with st.expander("📂 Upload Documents", expanded=False):
+            uploaded_files = st.file_uploader(
+                "Drag & drop or browse",
+                type=["pdf", "txt", "md", "docx", "csv"],
+                accept_multiple_files=True,
+                label_visibility="collapsed"
+            )
 
-        if uploaded_files:
-            for uf in uploaded_files:
-                existing = [d["filename"] for d in get_documents()]
-                if uf.name in existing:
-                    st.warning(f"'{uf.name}' already uploaded.")
-                    continue
+            if uploaded_files:
+                for uf in uploaded_files:
+                    existing = [d["filename"] for d in get_documents()]
+                    if uf.name in existing:
+                        st.warning(f"'{uf.name}' already uploaded.")
+                        continue
 
-                with st.spinner(f"Processing {uf.name}…"):
-                    try:
-                        suffix = os.path.splitext(uf.name)[1]
-                        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-                            tmp.write(uf.read())
-                            tmp_path = tmp.name
+                    with st.spinner(f"Processing {uf.name}…"):
+                        try:
+                            suffix = os.path.splitext(uf.name)[1]
+                            with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+                                tmp.write(uf.read())
+                                tmp_path = tmp.name
 
-                        text        = load_file(tmp_path)
-                        os.unlink(tmp_path)
-                        chunks_list = chunk_text(text)
-                        embeddings  = embed_texts(chunks_list)
-                        doc_id      = save_document(uf.name, suffix.lstrip("."), len(chunks_list))
-                        add_chunks(chunks_list, embeddings, uf.name, doc_id)
-                        st.success(f"✅ {uf.name} — {len(chunks_list)} chunks")
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"❌ Error: {e}")
+                            text        = load_file(tmp_path)
+                            os.unlink(tmp_path)
+                            chunks_list = chunk_text(text)
+                            embeddings  = embed_texts(chunks_list)
+                            doc_id      = save_document(uf.name, suffix.lstrip("."), len(chunks_list))
+                            add_chunks(chunks_list, embeddings, uf.name, doc_id)
+                            st.success(f"✅ {uf.name} — {len(chunks_list)} chunks")
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"❌ Error: {e}")
 
         st.divider()
 
@@ -747,19 +808,21 @@ def show_chatbot() -> None:
         </div>
         """, unsafe_allow_html=True)
         
-        # Suggested prompts in a 3-column layout
-        sp_col1, sp_col2, sp_col3 = st.columns(3)
+        # Suggested prompts in a 2x2 layout
+        sp_col1, sp_col2 = st.columns(2)
         with sp_col1:
-            if st.button("📝 Summarize Report", use_container_width=True, key="sp1"):
+            if st.button("📝 Summarize Project Report", use_container_width=True, key="sp1"):
                 st.session_state.suggested_prompt = "Summarize Project Report"
                 st.rerun()
+            if st.button("📊 Explain Q3 Financials", use_container_width=True, key="sp2"):
+                st.session_state.suggested_prompt = "Explain Q3 Financials"
+                st.rerun()
         with sp_col2:
-            if st.button("✍️ Draft Marketing", use_container_width=True, key="sp2"):
+            if st.button("✍️ Draft Marketing Email", use_container_width=True, key="sp3"):
                 st.session_state.suggested_prompt = "Draft Marketing Email"
                 st.rerun()
-        with sp_col3:
-            if st.button("📊 Explain Financials", use_container_width=True, key="sp3"):
-                st.session_state.suggested_prompt = "Explain Q3 Financials"
+            if st.button("💡 Brainstorm new ideas", use_container_width=True, key="sp4"):
+                st.session_state.suggested_prompt = "Brainstorm new marketing ideas"
                 st.rerun()
 
     # Display messages
