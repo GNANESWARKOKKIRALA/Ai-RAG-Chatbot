@@ -114,13 +114,58 @@ section[data-testid="stSidebar"] {
 }
 
 .stButton > button {
-    background: linear-gradient(135deg, #7c3aed, #2563eb) !important;
-    color: white !important;
-    border: none !important;
-    border-radius: 8px !important;
+    border-radius: 12px !important;
     font-weight: 600 !important;
+    padding: 10px 24px !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    border: none !important;
 }
-.stButton > button:hover { opacity: 0.9; }
+
+/* Primary Button Styling - Login, Create Account, Send, etc. */
+.stButton > button[kind="primary"] {
+    background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%) !important;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.35) !important;
+}
+.stButton > button[kind="primary"]:hover {
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.55) !important;
+    transform: translateY(-2px) !important;
+    filter: brightness(1.1) !important;
+}
+.stButton > button[kind="primary"]:active {
+    transform: translateY(1px) !important;
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.35) !important;
+}
+
+/* Secondary Button Styling - Sign Up instead, Login instead, Reset Database, etc. */
+.stButton > button[kind="secondary"] {
+    background: rgba(30, 30, 46, 0.6) !important;
+    color: #e2e8f0 !important;
+    border: 1px solid rgba(139, 92, 246, 0.4) !important;
+    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.05) !important;
+}
+.stButton > button[kind="secondary"]:hover {
+    background: rgba(139, 92, 246, 0.12) !important;
+    border-color: rgba(139, 92, 246, 0.8) !important;
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.25) !important;
+    color: white !important;
+    transform: translateY(-2px) !important;
+}
+.stButton > button[kind="secondary"]:active {
+    transform: translateY(1px) !important;
+}
+
+/* Chat input submit button styling */
+button[data-testid="stChatInputSubmitButton"] {
+    background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%) !important;
+    color: white !important;
+    border-radius: 50% !important;
+    transition: all 0.3s ease !important;
+}
+button[data-testid="stChatInputSubmitButton"]:hover {
+    transform: scale(1.1) !important;
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.5) !important;
+}
 
 div[data-testid="stFileUploader"] {
     background: #1a1a26;
