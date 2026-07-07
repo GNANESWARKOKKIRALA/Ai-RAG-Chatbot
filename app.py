@@ -41,340 +41,95 @@ st.set_page_config(
 # ── Custom CSS ────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-html, body, [class*="css"] { 
-    font-family: 'Inter', sans-serif; 
-}
+html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 
-.stApp { 
-    background-color: #090b15 !important; 
-    color: #e2e8f0; 
-}
+.stApp { background: #0f0f14; color: #e2e8f0; }
 
-/* Sidebar styling */
 section[data-testid="stSidebar"] {
-    background-color: #06070d !important;
-    border-right: 1px solid #1f244a !important;
+    background: #13131a !important;
+    border-right: 1px solid #2d2d3d;
 }
 
-section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {
-    padding-top: 1.5rem !important;
-}
-
-/* Scrollbars */
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-::-webkit-scrollbar-track {
-    background: #090b15;
-}
-::-webkit-scrollbar-thumb {
-    background: #1f244a;
-    border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-    background: #3b427b;
-}
-
-/* Brand header */
-.brand-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 4px;
+.chat-header {
+    background: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%);
+    padding: 20px 28px;
+    border-radius: 14px;
     margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
 }
-.brand-logo {
-    background: linear-gradient(135deg, #00f2fe 0%, #7c3aed 100%);
-    width: 38px;
-    height: 38px;
+.chat-header h1 { color: white; font-size: 1.5rem; font-weight: 700; margin: 0; }
+.chat-header p  { color: rgba(255,255,255,0.8); margin: 0; font-size: 0.85rem; }
+
+.metric-card {
+    background: #1a1a26;
+    border: 1px solid #2d2d3d;
     border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: 800;
-    font-size: 1.15rem;
-    box-shadow: 0 4px 15px rgba(0, 242, 254, 0.35);
-}
-.brand-text {
-    color: #f1f5f9;
-    font-weight: 700;
-    font-size: 1.15rem;
-    letter-spacing: -0.5px;
-}
-
-/* New chat buttons & standard buttons */
-.stButton > button {
-    background: #111326 !important;
-    border: 1px solid #1f244a !important;
-    color: #e2e8f0 !important;
-    border-radius: 12px !important;
-    font-weight: 600 !important;
-    padding: 8px 16px !important;
-    transition: all 0.2s ease-in-out !important;
-}
-.stButton > button:hover {
-    background: #1f244a !important;
-    border-color: #3b427b !important;
-    box-shadow: 0 0 10px rgba(124, 58, 237, 0.15) !important;
-}
-
-/* Make primary buttons pop with gradient */
-.stButton > button[kind="primary"], 
-div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
-    background: linear-gradient(135deg, #00f2fe 0%, #7c3aed 100%) !important;
-    color: white !important;
-    border: none !important;
-    font-weight: 700 !important;
-    box-shadow: 0 4px 15px rgba(0, 242, 254, 0.25) !important;
-}
-.stButton > button[kind="primary"]:hover,
-div[data-testid="stSidebar"] .stButton > button[kind="primary"]:hover {
-    opacity: 0.92 !important;
-    box-shadow: 0 4px 20px rgba(0, 242, 254, 0.35) !important;
-    transform: translateY(-1px) !important;
-}
-
-/* User profile card */
-.user-profile-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: #111326;
-    border: 1px solid #1f244a;
-    border-radius: 12px;
-    padding: 12px;
-    margin-bottom: 12px;
-    margin-top: 24px;
-}
-.user-profile-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #00f2fe, #7c3aed);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 1.1rem;
-    box-shadow: 0 2px 10px rgba(124, 58, 237, 0.25);
-}
-.user-profile-info {
-    display: flex;
-    flex-direction: column;
-}
-.user-profile-name {
-    color: #f1f5f9;
-    font-weight: 600;
-    font-size: 0.9rem;
-}
-.user-profile-role {
-    color: #64748b;
-    font-size: 0.75rem;
-}
-
-/* Document Chip Styles */
-.doc-chip-v2 {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: #111326;
-    border: 1px solid #1f244a;
-    border-radius: 10px;
-    padding: 10px 14px;
-    margin-bottom: 8px;
-    transition: all 0.2s ease;
-}
-.doc-chip-v2:hover {
-    border-color: #3b427b;
-    background: #161933;
-}
-.doc-icon {
-    font-size: 1.25rem;
-}
-.doc-details {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    overflow: hidden;
-}
-.doc-name {
-    color: #c4b5fd;
-    font-weight: 600;
-    font-size: 0.82rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-.doc-meta {
-    color: #64748b;
-    font-size: 0.72rem;
-}
-
-/* Meta Card styling */
-.meta-card {
-    background: #0f1225;
-    border: 1px solid #1f244a;
-    border-radius: 16px;
-    padding: 18px;
-    margin-bottom: 16px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    transition: all 0.3s ease;
-}
-.meta-card:hover {
-    border-color: rgba(124, 92, 250, 0.2);
-}
-.meta-card-title {
-    color: #94a3b8;
-    font-size: 0.8rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.7px;
-    margin-bottom: 12px;
-}
-
-/* Confidence Bar */
-.confidence-bar-container {
-    background: #161933;
-    border-radius: 8px;
-    height: 10px;
-    overflow: hidden;
-    margin-bottom: 8px;
-}
-.confidence-bar-fill {
-    background: linear-gradient(90deg, #00f2fe, #7c3aed);
-    height: 100%;
-    width: 95%;
-    border-radius: 8px;
-}
-.confidence-text {
-    color: #00f2fe;
-    font-size: 0.82rem;
-    font-weight: 600;
-}
-
-/* Status Indicator */
-.status-indicator-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #10b981;
-    box-shadow: 0 0 8px #10b981;
-    display: inline-block;
-}
-.status-text {
-    color: #10b981;
-    font-size: 0.85rem;
-    font-weight: 600;
-}
-
-/* Welcome Page Styling */
-.welcome-container {
-    text-align: center;
-    padding: 40px 20px;
-    margin-bottom: 30px;
-}
-.welcome-title {
-    font-size: 2.2rem !important;
-    font-weight: 800 !important;
-    color: #f1f5f9 !important;
-    margin-bottom: 8px !important;
-    letter-spacing: -0.5px !important;
-}
-.welcome-subtitle {
-    color: #64748b !important;
-    font-size: 1rem !important;
-}
-.suggested-prompts-label {
-    color: #94a3b8;
-    font-size: 0.85rem;
-    font-weight: 600;
-    margin-bottom: 14px;
+    padding: 14px 18px;
     text-align: center;
 }
+.metric-card .num { font-size: 1.8rem; font-weight: 700; color: #a78bfa; }
+.metric-card .lbl { font-size: 0.75rem; color: #94a3b8; margin-top: 2px; }
 
-/* Chat Header V2 */
-.chat-header-v2 {
-    background: linear-gradient(135deg, rgba(124, 58, 237, 0.15) 0%, rgba(37, 99, 235, 0.15) 100%);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 16px 24px;
-    border-radius: 16px;
-    margin-bottom: 24px;
-    backdrop-filter: blur(10px);
+.doc-chip {
+    background: #1e1e2e;
+    border: 1px solid #3b3b52;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin: 4px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.82rem;
 }
-.chat-header-title {
-    color: white;
-    font-size: 1.3rem;
-    font-weight: 700;
-}
-.chat-header-subtitle {
-    color: #94a3b8;
-    font-size: 0.9rem;
-    margin-left: 6px;
-}
+.doc-chip .name { color: #c4b5fd; font-weight: 500; }
+.doc-chip .meta { color: #64748b; }
 
-/* Chat Input Styling */
-div[data-testid="stChatInput"] {
-    background: #0f1225 !important;
-    border: 1px solid #1f244a !important;
-    border-radius: 16px !important;
-    padding: 8px !important;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3) !important;
-}
-div[data-testid="stChatInput"] textarea {
-    background: transparent !important;
-    color: #f1f5f9 !important;
-    border: none !important;
-    font-size: 0.95rem !important;
-}
-
-/* Drag & Drop File Uploader */
-div[data-testid="stFileUploader"] {
-    background: #0f1225 !important;
-    border: 2px dashed #1f244a !important;
-    border-radius: 14px !important;
-    padding: 14px !important;
-    transition: all 0.2s ease !important;
-}
-div[data-testid="stFileUploader"]:hover {
-    border-color: #3b427b !important;
-}
-
-/* Chat Messages */
-div[data-testid="stChatMessage"] {
-    background: rgba(19, 22, 43, 0.3) !important;
-    border: 1px solid rgba(31, 36, 74, 0.4) !important;
-    border-radius: 16px !important;
-    padding: 18px !important;
-    margin-bottom: 12px !important;
-    backdrop-filter: blur(12px) !important;
-}
-div[data-testid="stChatMessage"]:hover {
-    border-color: rgba(124, 92, 250, 0.25) !important;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
-}
-
-/* Source badge custom styling */
 .source-badge {
     display: inline-block;
-    background: #111326;
-    color: #a78bfa;
-    border: 1px solid #1f244a;
-    border-radius: 8px;
-    padding: 4px 10px;
-    font-size: 0.78rem;
-    margin: 4px;
-    transition: all 0.2s ease;
-}
-.source-badge:hover {
-    border-color: #7c3aed;
-    background: #161933;
+    background: #1e1b4b;
+    color: #a5b4fc;
+    border: 1px solid #3730a3;
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    margin: 2px;
 }
 
-/* Auth Brand */
+[data-testid="stChatMessage"] {
+    background: #16161f !important;
+    border: 1px solid #2d2d3d !important;
+    border-radius: 12px !important;
+    margin-bottom: 10px !important;
+}
+
+.stTextInput > div > div > input {
+    background: #1a1a26 !important;
+    border: 1px solid #3b3b52 !important;
+    color: #e2e8f0 !important;
+    border-radius: 10px !important;
+}
+
+.stButton > button {
+    background: linear-gradient(135deg, #7c3aed, #2563eb) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+}
+.stButton > button:hover { opacity: 0.9; }
+
+div[data-testid="stFileUploader"] {
+    background: #1a1a26;
+    border: 2px dashed #3b3b52;
+    border-radius: 12px;
+    padding: 10px;
+}
+
+/* ── Auth page ── */
 .auth-brand {
     text-align: center;
     margin-bottom: 28px;
@@ -383,17 +138,17 @@ div[data-testid="stChatMessage"]:hover {
 .auth-brand-icon {
     width: 80px;
     height: 80px;
-    background: linear-gradient(135deg, #00f2fe 0%, #7c3aed 100%);
+    background: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%);
     border-radius: 24px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     font-size: 2.2rem;
     margin-bottom: 16px;
-    box-shadow: 0 8px 40px rgba(0,242,254,0.3);
+    box-shadow: 0 8px 40px rgba(124,58,237,0.4);
 }
 .auth-brand-title {
-    font-size: 2.2rem;
+    font-size: 2rem;
     font-weight: 800;
     color: #f1f5f9;
     letter-spacing: -0.5px;
@@ -401,7 +156,7 @@ div[data-testid="stChatMessage"]:hover {
 }
 .auth-brand-sub {
     color: #64748b;
-    font-size: 0.95rem;
+    font-size: 0.92rem;
     margin: 0 0 12px 0;
 }
 .auth-pills {
@@ -412,41 +167,45 @@ div[data-testid="stChatMessage"]:hover {
     margin-top: 10px;
 }
 .auth-pill {
-    background: rgba(0, 242, 254, 0.08);
-    border: 1px solid rgba(0, 242, 254, 0.2);
-    color: #00f2fe;
+    background: rgba(124,58,237,0.12);
+    border: 1px solid rgba(124,58,237,0.25);
+    color: #a78bfa;
     border-radius: 20px;
-    padding: 4px 14px;
-    font-size: 0.78rem;
-    font-weight: 600;
+    padding: 3px 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
 }
 .auth-form-title {
-    font-size: 1.25rem;
+    font-size: 1.15rem;
     font-weight: 700;
     color: #e2e8f0;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 .auth-form-sub {
     color: #64748b;
-    font-size: 0.85rem;
-    margin-bottom: 24px;
+    font-size: 0.82rem;
+    margin-bottom: 20px;
 }
 .auth-divider {
     text-align: center;
-    margin-top: 20px;
-    padding-top: 18px;
-    border-top: 1px solid #1f244a;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid #1e1e2e;
     color: #475569;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
 }
 .auth-divider span {
-    color: #00f2fe;
+    color: #a78bfa;
     font-weight: 600;
 }
 
 /* Mobile responsiveness */
-@media (max-width: 768px) {
-    .welcome-title { font-size: 1.6rem !important; }
+@media (max-width: 640px) {
+    .chat-header { padding: 14px 16px; }
+    .chat-header h1 { font-size: 1.1rem; }
+    .auth-card { padding: 24px 16px; margin: 0 8px 24px 8px; }
+    .auth-hero { padding: 32px 16px 20px 16px; }
+    .auth-hero h1 { font-size: 1.4rem; }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -557,23 +316,27 @@ def show_chatbot() -> None:
 
     # ── Sidebar ──────────────────────────────────────────────────────────────
     with st.sidebar:
-        # Brand Header matching UI reference
-        st.markdown("""
-        <div class="brand-header">
-            <div class="brand-logo">AI</div>
-            <div class="brand-text">RAG Assistant</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        # Primary Action: New Chat (clears conversation history)
-        if st.button("➕ New Chat", use_container_width=True, type="primary"):
-            clear_history(session_id, username=username)
-            st.session_state.messages = []
-            st.rerun()
-
+        st.markdown("## 🤖  AI RAG Chatbot")
+        st.markdown("**Powered by LLaMA 3.3 70B + Groq**")
         st.divider()
 
-        # Document upload panel
+        # Metrics
+        docs   = get_documents()
+        chunks = count_chunks()
+        col1, col2 = st.columns(2)
+        with col1:
+            st.markdown(
+                f'<div class="metric-card"><div class="num">{len(docs)}</div>'
+                f'<div class="lbl">Documents</div></div>',
+                unsafe_allow_html=True
+            )
+        with col2:
+            st.markdown(
+                f'<div class="metric-card"><div class="num">{chunks}</div>'
+                f'<div class="lbl">Chunks</div></div>',
+                unsafe_allow_html=True
+            )
+
         st.markdown("### 📂 Upload Documents")
         uploaded_files = st.file_uploader(
             "Drag & drop or browse",
@@ -603,204 +366,20 @@ def show_chatbot() -> None:
                         doc_id      = save_document(uf.name, suffix.lstrip("."), len(chunks_list))
                         add_chunks(chunks_list, embeddings, uf.name, doc_id)
                         st.success(f"✅ {uf.name} — {len(chunks_list)} chunks")
-                        st.rerun()
                     except Exception as e:
                         st.error(f"❌ Error: {e}")
-
-        st.divider()
-
-        # Database utilities
-        if st.button("🗑️ Reset Database", use_container_width=True):
-            reset_store()
-            clear_history(session_id, username=username)
-            st.session_state.messages = []
-            conn = __import__("sqlite3").connect("chat_history.db")
-            conn.execute("DELETE FROM documents")
-            conn.commit()
-            conn.close()
-            st.rerun()
-
-        st.divider()
-
-        st.markdown(
-            '<div style="font-size:0.72rem;color:#475569;text-align:center;">'
-            'Built with 🤖 LLaMA 3.3 · Groq · ChromaDB · SQLite'
-            '</div>',
-            unsafe_allow_html=True
-        )
-
-        st.divider()
-
-        # Logged-in user info + logout — pinned to bottom with the premium design
-        st.markdown(
-            f'<div class="user-profile-card">'
-            f'  <div class="user-profile-avatar">👤</div>'
-            f'  <div class="user-profile-info">'
-            f'    <div class="user-profile-name">{username}</div>'
-            f'    <div class="user-profile-role">Active User</div>'
-            f'  </div>'
-            f'</div>',
-            unsafe_allow_html=True
-        )
-        if st.button("🚪 Logout", use_container_width=True, key="logout_btn"):
-            logout_user()
-            st.rerun()
-
-    # ── Main Layout (Chat on Left, Metadata on Right) ─────────────────────────
-    chat_col, right_col = st.columns([3.2, 1.3], gap="medium")
-
-    with chat_col:
-        # Chat Header V2
-        st.markdown("""
-        <div class="chat-header-v2">
-          <div style="display: flex; align-items: center; justify-content: space-between;">
-            <div>
-              <span class="chat-header-title">AI RAG Assistant</span>
-              <span class="chat-header-subtitle">- Workspace</span>
-            </div>
-            <div style="font-size:0.75rem;color:#64748b;background:#111326;padding:4px 10px;border-radius:8px;border:1px solid #1f244a;">
-              Groq LLaMA 3.3 Active
-            </div>
-          </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        # Load per-user history from DB on first load
-        if not st.session_state.messages:
-            st.session_state.messages = get_history(session_id, username=username)
-
-        # Welcome message if chat history is empty
-        if not st.session_state.messages:
-            st.markdown("""
-            <div class="welcome-container">
-              <h1 class="welcome-title">How can I help you today?</h1>
-              <p class="welcome-subtitle">Ask questions about your uploaded documents, or start with a suggestion.</p>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown('<div class="suggested-prompts-label">Suggested Prompts</div>', unsafe_allow_html=True)
-            sp_col1, sp_col2, sp_col3 = st.columns(3)
-            with sp_col1:
-                if st.button("📝 Summarize Report", use_container_width=True, key="sp1"):
-                    st.session_state.suggested_prompt = "Summarize Project Report"
-                    st.rerun()
-            with sp_col2:
-                if st.button("✍️ Draft Marketing", use_container_width=True, key="sp2"):
-                    st.session_state.suggested_prompt = "Draft Marketing Email"
-                    st.rerun()
-            with sp_col3:
-                if st.button("📊 Explain Financials", use_container_width=True, key="sp3"):
-                    st.session_state.suggested_prompt = "Explain Q3 Financials"
-                    st.rerun()
-            st.write("")
-
-        # Display messages
-        for msg in st.session_state.messages:
-            with st.chat_message(msg["role"], avatar="🤖" if msg["role"] == "assistant" else "🧑"):
-                st.markdown(msg["content"])
-
-        # ── Chat Input & Processing ───────────────────────────────────────────
-        clicked_prompt = None
-        if "suggested_prompt" in st.session_state and st.session_state.suggested_prompt:
-            clicked_prompt = st.session_state.suggested_prompt
-            del st.session_state["suggested_prompt"]
-
-        prompt = st.chat_input("Ask a question about your documents…")
-        if clicked_prompt:
-            prompt = clicked_prompt
-
-        if prompt:
-            with st.chat_message("user", avatar="🧑"):
-                st.markdown(prompt)
-
-            st.session_state.messages.append({"role": "user", "content": prompt})
-            save_message(session_id, "user", prompt, username=username)
-
-            # Retrieve context
-            hits    = retrieve(prompt) if count_chunks() > 0 else []
-            context = format_context(hits)
-            sources_text = format_sources(hits)
-
-            # Stream response
-            with st.chat_message("assistant", avatar="🤖"):
-                placeholder   = st.empty()
-                full_response = ""
-
-                history_for_llm = [
-                    {"role": m["role"], "content": m["content"]}
-                    for m in st.session_state.messages
-                ]
-
-                for chunk in chat(history_for_llm, context=context, stream=True):
-                    full_response += chunk
-                    placeholder.markdown(full_response + "▌")
-
-                if sources_text:
-                    full_response += f"\n\n{sources_text}"
-
-                placeholder.markdown(full_response)
-
-            st.session_state.messages.append({"role": "assistant", "content": full_response})
-            save_message(session_id, "assistant", full_response, username=username)
-            st.rerun()
-
-    with right_col:
-        # Confidence Score Card
-        st.markdown("""
-        <div class="meta-card">
-          <div class="meta-card-title">Confidence Score</div>
-          <div class="confidence-bar-container">
-            <div class="confidence-bar-fill"></div>
-          </div>
-          <div class="confidence-text">95% (Highly Relevant Context)</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        # Processing Status
-        st.markdown("""
-        <div class="meta-card">
-          <div class="meta-card-title">System Status</div>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span class="status-indicator-dot"></span>
-            <span class="status-text">Complete & Indexed</span>
-          </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-        # Indexed chunks count
-        chunks = count_chunks()
-        st.markdown(f"""
-        <div class="meta-card">
-          <div class="meta-card-title">Indexed Knowledge Chunks</div>
-          <div style="font-size: 1.8rem; font-weight: 700; color: #a78bfa;">{chunks}</div>
-          <div style="font-size: 0.72rem; color: #64748b; margin-top: 4px;">Total vector embeddings in ChromaDB</div>
-        </div>
-        """, unsafe_allow_html=True)
 
         # Document list
         docs = get_documents()
         if docs:
-            st.markdown('<div class="meta-card-title" style="margin-top: 15px; margin-bottom: 10px;">Retrieved Documents</div>', unsafe_allow_html=True)
+            st.markdown("### 📄 Uploaded Documents")
             for doc in docs:
-                col_n, col_x = st.columns([5, 1])
+                col_n, col_x = st.columns([4, 1])
                 with col_n:
-                    ext = doc["filename"].split(".")[-1].lower()
-                    icon = "📄"
-                    if ext == "pdf":
-                        icon = "📕"
-                    elif ext in ["doc", "docx"]:
-                        icon = "📘"
-                    elif ext == "csv":
-                        icon = "📊"
-                    elif ext in ["txt", "md"]:
-                        icon = "📝"
                     st.markdown(
-                        f'<div class="doc-chip-v2">'
-                        f'  <span class="doc-icon">{icon}</span>'
-                        f'  <div class="doc-details">'
-                        f'    <div class="doc-name">{doc["filename"]}</div>'
-                        f'    <div class="doc-meta">{doc["chunk_count"]} chunks</div>'
-                        f'  </div>'
+                        f'<div class="doc-chip">'
+                        f'<span class="name">📄 {doc["filename"]}</span>'
+                        f'<span class="meta">{doc["chunk_count"]} chunks</span>'
                         f'</div>',
                         unsafe_allow_html=True
                     )
@@ -810,22 +389,109 @@ def show_chatbot() -> None:
                         delete_document(doc["id"])
                         delete_document_record(doc["id"])
                         st.rerun()
-        else:
-            st.markdown("""
-            <div class="meta-card" style="text-align: center; padding: 24px 10px;">
-              <div style="font-size: 1.5rem; margin-bottom: 8px;">📂</div>
-              <div style="font-size: 0.8rem; color: #64748b;">No documents uploaded. Upload files in the sidebar to begin RAG.</div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-        # Pinned decorative sparkle
-        st.markdown("""
-        <div style="text-align: center; margin-top: 30px; opacity: 0.15;">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2">
-            <path d="M12 3v18M3 12h18M12 3l4 4M12 21l-4-4M3 12l4-4M21 12l-4 4"/>
-          </svg>
-        </div>
-        """, unsafe_allow_html=True)
+
+        st.divider()
+        col_a, col_b = st.columns(2)
+        with col_a:
+            if st.button("🧹 Clear Chat"):
+                clear_history(session_id, username=username)
+                st.session_state.messages = []
+                st.rerun()
+        with col_b:
+            if st.button("🗑️ Reset All"):
+                reset_store()
+                clear_history(session_id, username=username)
+                st.session_state.messages = []
+                conn = __import__("sqlite3").connect("chat_history.db")
+                conn.execute("DELETE FROM documents")
+                conn.commit()
+                conn.close()
+                st.rerun()
+        st.divider()
+        st.markdown(
+            '<div style="font-size:0.72rem;color:#475569;text-align:center;">'
+            'Built with 🤖LaMA 3.3 70B · Groq · ChromaDB · SQLite · Streamlit'
+            '</div>',
+            unsafe_allow_html=True
+        )
+        st.divider()
+
+        # Logged-in user info + logout — pinned to bottom
+        st.markdown(
+            f'<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">'
+            f'<span style="background:#1e1e2e;border:1px solid #3b3b52;border-radius:50%;'
+            f'width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;">👤</span>'
+            f'<span style="color:#c4b5fd;font-weight:600;">{username}</span>'
+            f'</div>',
+            unsafe_allow_html=True
+        )
+        if st.button("🚪 Logout", use_container_width=True):
+            logout_user()
+            st.rerun()
+
+    # ── Main Chat Area ────────────────────────────────────────────────────────
+    st.markdown("""
+    <div class="chat-header">
+      <div style="font-size:2rem;"></div>
+      <div>
+        <h1>🤖AI RAG Chatbot</h1>
+        <p>Ask questions about your documents · Powered by LLaMA 3.3 70B via Groq API</p>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Load per-user history from DB on first load
+    if not st.session_state.messages:
+        st.session_state.messages = get_history(session_id, username=username)
+
+    # Display messages
+    for msg in st.session_state.messages:
+        with st.chat_message(msg["role"], avatar="🤖" if msg["role"] == "assistant" else "🧑"):
+            st.markdown(msg["content"])
+
+    # Welcome message
+    if not st.session_state.messages:
+        with st.chat_message("assistant", avatar="😎"):
+            st.markdown(
+                f"👋 **Welcome back, {username}!** I'm your AI RAG Chatbot powered by **LLaMA 3.3 70B via Groq**.\n\n"
+                "📂 Upload documents in the sidebar (PDF, DOCX, TXT, CSV) and ask me anything about them.\n\n"
+                "⚡ Groq gives **ultra-fast** responses — try it!"
+            )
+
+    # ── Chat Input ────────────────────────────────────────────────────────────
+    if prompt := st.chat_input("Ask a question about your documents…"):
+        with st.chat_message("user", avatar="🧑"):
+            st.markdown(prompt)
+
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        save_message(session_id, "user", prompt, username=username)
+
+        # Retrieve context
+        hits    = retrieve(prompt) if count_chunks() > 0 else []
+        context = format_context(hits)
+        sources_text = format_sources(hits)
+
+        # Stream response
+        with st.chat_message("assistant", avatar="🤖"):
+            placeholder   = st.empty()
+            full_response = ""
+
+            history_for_llm = [
+                {"role": m["role"], "content": m["content"]}
+                for m in st.session_state.messages
+            ]
+
+            for chunk in chat(history_for_llm, context=context, stream=True):
+                full_response += chunk
+                placeholder.markdown(full_response + "▌")
+
+            if sources_text:
+                full_response += f"\n\n{sources_text}"
+
+            placeholder.markdown(full_response)
+
+        st.session_state.messages.append({"role": "assistant", "content": full_response})
+        save_message(session_id, "assistant", full_response, username=username)
 
 
 # ════════════════════════════════════════════════════════════════════════════
