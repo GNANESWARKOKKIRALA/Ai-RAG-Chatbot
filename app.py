@@ -114,10 +114,10 @@ section[data-testid="stSidebar"] {
 }
 
 .stButton > button {
-    border-radius: 12px !important;
+    border-radius: 20px 4px 20px 4px !important;
     font-weight: 600 !important;
     padding: 10px 24px !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
     border: none !important;
 }
 
@@ -128,6 +128,7 @@ section[data-testid="stSidebar"] {
     box-shadow: 0 4px 15px rgba(139, 92, 246, 0.35) !important;
 }
 .stButton > button[kind="primary"]:hover {
+    border-radius: 4px 20px 4px 20px !important;
     box-shadow: 0 6px 20px rgba(139, 92, 246, 0.55) !important;
     transform: translateY(-2px) !important;
     filter: brightness(1.1) !important;
@@ -139,14 +140,14 @@ section[data-testid="stSidebar"] {
 
 /* Secondary Button Styling - Sign Up instead, Login instead, Reset Database, etc. */
 .stButton > button[kind="secondary"] {
-    background: rgba(30, 30, 46, 0.6) !important;
+    background: linear-gradient(#1a1a26, #1a1a26) padding-box, linear-gradient(135deg, #8b5cf6, #3b82f6) border-box !important;
     color: #e2e8f0 !important;
-    border: 1px solid rgba(139, 92, 246, 0.4) !important;
+    border: 1.5px solid transparent !important;
     box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.05) !important;
 }
 .stButton > button[kind="secondary"]:hover {
-    background: rgba(139, 92, 246, 0.12) !important;
-    border-color: rgba(139, 92, 246, 0.8) !important;
+    border-radius: 4px 20px 4px 20px !important;
+    background: linear-gradient(rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.15)) padding-box, linear-gradient(135deg, #8b5cf6, #3b82f6) border-box !important;
     box-shadow: 0 0 15px rgba(139, 92, 246, 0.25) !important;
     color: white !important;
     transform: translateY(-2px) !important;
