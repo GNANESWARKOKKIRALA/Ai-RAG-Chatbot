@@ -107,76 +107,20 @@ section[data-testid="stSidebar"] {
 }
 
 .stTextInput > div > div > input {
-    background: rgba(26, 26, 38, 0.5) !important;
-    border: 1.5px solid rgba(124, 58, 237, 0.25) !important;
-    color: #f1f5f9 !important;
-    border-radius: 12px !important;
-    padding: 12px 16px !important;
-    font-size: 0.95rem !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
-}
-.stTextInput > div > div > input:focus {
-    background: rgba(26, 26, 38, 0.8) !important;
-    border-color: rgba(139, 92, 246, 0.8) !important;
-    box-shadow: 0 0 15px rgba(139, 92, 246, 0.25), inset 0 1px 2px rgba(0, 0, 0, 0.2) !important;
-    transform: translateY(-1px) !important;
+    background: #1a1a26 !important;
+    border: 1px solid #3b3b52 !important;
+    color: #e2e8f0 !important;
+    border-radius: 10px !important;
 }
 
 .stButton > button {
-    border-radius: 20px 4px 20px 4px !important;
-    font-weight: 600 !important;
-    padding: 10px 24px !important;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    background: linear-gradient(135deg, #7c3aed, #2563eb) !important;
+    color: white !important;
     border: none !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
 }
-
-/* Primary Button Styling - Login, Create Account, Send, etc. */
-.stButton > button[kind="primary"] {
-    background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%) !important;
-    color: white !important;
-    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.35) !important;
-}
-.stButton > button[kind="primary"]:hover {
-    border-radius: 4px 20px 4px 20px !important;
-    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.55) !important;
-    transform: translateY(-2px) !important;
-    filter: brightness(1.1) !important;
-}
-.stButton > button[kind="primary"]:active {
-    transform: translateY(1px) !important;
-    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.35) !important;
-}
-
-/* Secondary Button Styling - Sign Up instead, Login instead, Reset Database, etc. */
-.stButton > button[kind="secondary"] {
-    background: linear-gradient(#1a1a26, #1a1a26) padding-box, linear-gradient(135deg, #8b5cf6, #3b82f6) border-box !important;
-    color: #e2e8f0 !important;
-    border: 1.5px solid transparent !important;
-    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.05) !important;
-}
-.stButton > button[kind="secondary"]:hover {
-    border-radius: 4px 20px 4px 20px !important;
-    background: linear-gradient(rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.15)) padding-box, linear-gradient(135deg, #8b5cf6, #3b82f6) border-box !important;
-    box-shadow: 0 0 15px rgba(139, 92, 246, 0.25) !important;
-    color: white !important;
-    transform: translateY(-2px) !important;
-}
-.stButton > button[kind="secondary"]:active {
-    transform: translateY(1px) !important;
-}
-
-/* Chat input submit button styling */
-button[data-testid="stChatInputSubmitButton"] {
-    background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%) !important;
-    color: white !important;
-    border-radius: 50% !important;
-    transition: all 0.3s ease !important;
-}
-button[data-testid="stChatInputSubmitButton"]:hover {
-    transform: scale(1.1) !important;
-    box-shadow: 0 0 10px rgba(139, 92, 246, 0.5) !important;
-}
+.stButton > button:hover { opacity: 0.9; }
 
 div[data-testid="stFileUploader"] {
     background: #1a1a26;
@@ -253,31 +197,6 @@ div[data-testid="stFileUploader"] {
 .auth-divider span {
     color: #a78bfa;
     font-weight: 600;
-}
-
-/* Animations & Auth Page Overrides */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(24px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.stApp:has(.auth-brand) .auth-brand {
-    animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
-}
-.stApp:has(.auth-brand) .stTextInput {
-    animation: fadeInUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
-}
-.stApp:has(.auth-brand) .stButton {
-    animation: fadeInUp 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
-}
-.stApp:has(.auth-brand) .auth-divider {
-    animation: fadeInUp 1.25s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
 }
 
 /* Mobile responsiveness */
