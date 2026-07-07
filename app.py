@@ -107,10 +107,20 @@ section[data-testid="stSidebar"] {
 }
 
 .stTextInput > div > div > input {
-    background: #1a1a26 !important;
-    border: 1px solid #3b3b52 !important;
-    color: #e2e8f0 !important;
-    border-radius: 10px !important;
+    background: rgba(26, 26, 38, 0.5) !important;
+    border: 1.5px solid rgba(124, 58, 237, 0.25) !important;
+    color: #f1f5f9 !important;
+    border-radius: 12px !important;
+    padding: 12px 16px !important;
+    font-size: 0.95rem !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+.stTextInput > div > div > input:focus {
+    background: rgba(26, 26, 38, 0.8) !important;
+    border-color: rgba(139, 92, 246, 0.8) !important;
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.25), inset 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+    transform: translateY(-1px) !important;
 }
 
 .stButton > button {
@@ -243,6 +253,31 @@ div[data-testid="stFileUploader"] {
 .auth-divider span {
     color: #a78bfa;
     font-weight: 600;
+}
+
+/* Animations & Auth Page Overrides */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stApp:has(.auth-brand) .auth-brand {
+    animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+.stApp:has(.auth-brand) .stTextInput {
+    animation: fadeInUp 0.95s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+.stApp:has(.auth-brand) .stButton {
+    animation: fadeInUp 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+}
+.stApp:has(.auth-brand) .auth-divider {
+    animation: fadeInUp 1.25s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
 }
 
 /* Mobile responsiveness */
