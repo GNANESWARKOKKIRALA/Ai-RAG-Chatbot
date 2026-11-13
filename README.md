@@ -1,6 +1,10 @@
-# 🧠 NexusRAG — Enterprise AI Document Intelligence Platform
+# 🔮 GAPX-AI — Intelligent Document Assistant
 
-A production-grade **Retrieval-Augmented Generation (RAG)** platform powered by **Groq**, **ChromaDB**, **Sentence Transformers**, and **SQLite**, designed for accurate, evidence-backed document inquiry and intelligence.
+> **Ask · Discover · Get Trusted Answers**
+
+![GAPX-AI Banner](assets/gapx_banner.png)
+
+A production-grade **AI Document Intelligence Platform** designed for accurate, evidence-backed document inquiry and intelligence.
 
 ---
 
