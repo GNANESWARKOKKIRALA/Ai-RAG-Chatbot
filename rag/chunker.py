@@ -23,7 +23,7 @@ def split_into_sentences(text: str) -> List[str]:
     return sentences
 
 
-def chunk_text(text: str, chunk_size: int = 250, overlap: int = 40) -> List[str]:
+def chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> List[str]:
     """
     Split text into semantically coherent overlapping chunks.
     Maintains backward compatibility with original chunk_text signature.
@@ -80,8 +80,8 @@ def chunk_text(text: str, chunk_size: int = 250, overlap: int = 40) -> List[str]
 
 def chunk_document_pages(
     pages: List[Dict[str, Any]],
-    chunk_size: int = 250,
-    overlap: int = 40
+    chunk_size: int = 500,
+    overlap: int = 50
 ) -> List[Dict[str, Any]]:
     """
     Chunk page objects while preserving page numbers and section labels.

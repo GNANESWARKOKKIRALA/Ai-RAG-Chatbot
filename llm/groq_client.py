@@ -60,28 +60,24 @@ def get_client() -> Groq:
 
 
 def build_system_prompt(context: str, mode: str = "Research") -> str:
-    mode_info = CHAT_MODES.get(mode, CHAT_MODES["Research"])
-    mode_instruction = mode_info["instruction"]
-
     if context:
         return (
-            "You are a professional AI Document Intelligence Assistant. "
-            "Your objective is to deliver accurate, grounded answers strictly using the retrieved document context below.\n\n"
-            f"RESPONSE STYLE DIRECTIVE ({mode.upper()} MODE):\n{mode_instruction}\n\n"
-            "STRICT GROUNDING RULES:\n"
-            "1. Answer ONLY using the facts present in the RETRIEVED CONTEXT below.\n"
-            "2. If the user's question cannot be answered from the provided context, state clearly: "
+            "You are GAPX-AI, an Intelligent Document Assistant. "
+            "Your objective is to deliver accurate, strictly grounded answers using the document context below.\n\n"
+            "STRICT ACCURACY & GROUNDING RULES:\n"
+            "1. Answer strictly and solely using the facts provided in the RETRIEVED CONTEXT below.\n"
+            "2. If the user's question cannot be answered from the provided context, clearly state: "
             "'I couldn't find relevant information in the uploaded documents to answer this question.'\n"
-            "3. Whenever citing specific facts or numbers, mention the source document name and page number.\n"
-            "4. Never extrapolate unsupported speculations without explicitly flagging them as uncertain.\n\n"
+            "3. Do not invent, extrapolate, or hallucinate unsupported claims.\n"
+            "4. When citing facts, mention the source document name and page number whenever available (e.g., [filename.pdf, Page X]).\n"
+            "5. Maintain consistent factual grounding across all follow-up questions.\n\n"
             f"RETRIEVED CONTEXT:\n{context}"
         )
     return (
-        "You are a professional AI Document Intelligence Assistant powered by Groq. "
-        "No documents have been uploaded yet. Answer general questions politely from your foundational knowledge. "
-        "If the user asks about specific uploaded documents, guide them to upload files (PDF, DOCX, TXT, CSV) "
-        "via the Knowledge Base or sidebar.\n\n"
-        f"RESPONSE STYLE DIRECTIVE ({mode.upper()} MODE):\n{mode_instruction}"
+        "You are GAPX-AI, an Intelligent Document Assistant. "
+        "No documents have been uploaded yet. Answer general questions politely from your foundational knowledge, "
+        "and clearly inform the user that no documents are currently indexed. "
+        "Guide the user to upload documents (PDF, DOCX, TXT, CSV) in the sidebar to ask questions about their files."
     )
 
 

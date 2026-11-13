@@ -1,10 +1,9 @@
 """
 app.py — GAPX-AI: Intelligent Document Assistant
 Ask · Discover · Get Trusted Answers
-Built with Streamlit, Groq, ChromaDB, Sentence Transformers, and SQLite.
+High accuracy hybrid RAG with clean, professional dark SaaS interface.
 """
 import os
-import time
 import tempfile
 import streamlit as st
 from dotenv import load_dotenv
@@ -16,17 +15,13 @@ from rag.loader import load_document_pages
 from rag.chunker import chunk_document_pages
 from rag.embedder import embed_texts
 from rag.vector_store import add_chunks, reset_store, count_chunks, delete_document
-from rag.retriever import retrieve_with_latency, format_context, format_citations_list
-from rag.verifier import verify_answer
-from llm.groq_client import chat, generate_followup_questions, CHAT_MODES
+from rag.retriever import retrieve, format_context, format_sources
+from llm.groq_client import chat
 
 # Utilities & Database
 from utils.helpers import (
     init_db, save_document, get_documents, delete_document_record,
-    save_message, get_history, clear_history, new_session_id,
-    get_user_sessions, rename_session, delete_session,
-    export_chat_as_txt, export_chat_as_markdown,
-    log_analytics, get_analytics_summary
+    save_message, get_history, clear_history, new_session_id
 )
 from auth.db import init_users_db
 from auth.auth import create_user, authenticate_user
@@ -42,38 +37,35 @@ init_session()
 
 st.set_page_config(
     page_title="GAPX-AI — Intelligent Document Assistant",
-    page_icon="assets/gapx_banner.png" if os.path.exists("assets/gapx_banner.png") else "✨",
+    page_icon="assets/gapx_banner.png" if os.path.exists("assets/gapx_banner.png") else "🔮",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# ── Modern Professional Dark SaaS CSS with Visibility Fixes ──────────────────
+# ── Professional Clean SaaS Dark Theme CSS ────────────────────────────────────
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 html, body, [class*="css"] {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     color: #e2e8f0;
 }
 
-/* Background & Core Colors */
 .stApp {
     background: #08090e;
     color: #e2e8f0;
 }
 
-/* FIX: Top Streamlit Header & Toolbar Visibility */
+/* Fix: Top Streamlit Header & Toolbar Visibility (No Clipping) */
 header[data-testid="stHeader"] {
-    background: rgba(8, 9, 14, 0.85) !important;
-    backdrop-filter: blur(10px) !important;
-    z-index: 10 !important;
+    background: transparent !important;
+    height: 2.5rem !important;
 }
 
-/* Main Container: Generous top padding prevents clipping under Streamlit menu */
 .main .block-container {
-    max-width: 1050px;
-    padding-top: 4.8rem !important;
+    max-width: 950px;
+    padding-top: 4.5rem !important;
     padding-bottom: 6rem !important;
 }
 
@@ -84,7 +76,7 @@ section[data-testid="stSidebar"] {
 }
 
 section[data-testid="stSidebar"] .block-container {
-    padding-top: 3.5rem !important;
+    padding-top: 3.2rem !important;
     padding-bottom: 2rem !important;
 }
 
@@ -94,138 +86,107 @@ section[data-testid="stSidebar"] .block-container {
 ::-webkit-scrollbar-thumb { background: #222738; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #353d54; }
 
-/* GAPX-AI Brand Badge in Sidebar */
-.brand-container {
+/* GAPX-AI Header Banner in Chat */
+.chat-header {
+    background: linear-gradient(135deg, #6d28d9 0%, #2563eb 100%);
+    padding: 22px 28px;
+    border-radius: 16px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 6px 24px rgba(109, 40, 217, 0.3);
+}
+.chat-header-logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #ffffff;
+    box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3);
+}
+.chat-header h1 {
+    color: #ffffff;
+    font-size: 1.55rem;
+    font-weight: 800;
+    margin: 0;
+    letter-spacing: -0.4px;
+}
+.chat-header p {
+    color: rgba(255, 255, 255, 0.88);
+    margin: 3px 0 0 0;
+    font-size: 0.88rem;
+    font-weight: 400;
+}
+
+/* Sidebar Brand Header */
+.sidebar-brand {
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 6px 2px;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
 }
-.brand-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
+.sidebar-logo {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     font-weight: 800;
     color: #ffffff;
-    box-shadow: 0 4px 18px rgba(139, 92, 246, 0.45);
+    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
 }
-.brand-title {
-    font-size: 1.25rem;
+.sidebar-title {
+    font-size: 1.2rem;
     font-weight: 800;
     color: #ffffff;
-    letter-spacing: -0.4px;
+    letter-spacing: -0.3px;
     margin: 0;
 }
-.brand-sub {
+.sidebar-sub {
     font-size: 0.72rem;
     color: #a5b4fc;
     font-weight: 500;
     margin: 0;
 }
 
-/* Chat Workspace Top Bar Card */
-.workspace-topbar {
-    background: #11141f;
-    border: 1px solid #1f2537;
-    border-radius: 14px;
-    padding: 14px 20px;
-    margin-bottom: 18px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
-}
-.workspace-title-area {
-    display: flex;
-    flex-direction: column;
-}
-.workspace-title {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #f8fafc;
-    letter-spacing: -0.3px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.workspace-sub {
-    font-size: 0.75rem;
-    color: #94a3b8;
-    margin-top: 2px;
-}
-.status-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(16, 185, 129, 0.12);
-    border: 1px solid rgba(16, 185, 129, 0.3);
-    color: #10b981;
-    border-radius: 12px;
-    padding: 2px 8px;
-    font-size: 0.72rem;
-    font-weight: 600;
-}
-
-/* SaaS Metric Card */
-.metric-box {
-    background: #11141f;
-    border: 1px solid #1f2537;
-    border-radius: 12px;
-    padding: 16px 18px;
-    margin-bottom: 12px;
-    transition: all 0.2s ease;
-}
-.metric-box:hover {
-    border-color: #2e374f;
-    transform: translateY(-1px);
-}
-.metric-num {
-    font-size: 1.7rem;
-    font-weight: 800;
-    color: #a78bfa;
-    letter-spacing: -0.5px;
-}
-.metric-label {
-    font-size: 0.78rem;
-    font-weight: 500;
-    color: #94a3b8;
-    margin-top: 4px;
-}
-
-/* Sidebar Document Chips & Metrics */
+/* Sidebar Metric Cards */
 .side-metric {
-    background: #121520;
+    background: #111420;
     border: 1px solid #1e2434;
-    border-radius: 8px;
-    padding: 8px 10px;
+    border-radius: 10px;
+    padding: 10px 12px;
     text-align: center;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
 }
 .side-metric .num {
-    font-size: 1.25rem;
-    font-weight: 700;
+    font-size: 1.4rem;
+    font-weight: 800;
     color: #a78bfa;
 }
 .side-metric .lbl {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     color: #94a3b8;
+    margin-top: 2px;
 }
+
+/* Document Chips */
 .doc-chip {
-    background: #121520;
+    background: #111420;
     border: 1px solid #1e2434;
     border-radius: 8px;
-    padding: 6px 10px;
+    padding: 8px 12px;
     margin-bottom: 6px;
-    font-size: 0.8rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    font-size: 0.82rem;
 }
 .doc-chip .name {
     color: #f1f5f9;
@@ -233,14 +194,14 @@ section[data-testid="stSidebar"] .block-container {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    max-width: 140px;
 }
 .doc-chip .meta {
     color: #64748b;
     font-size: 0.72rem;
+    margin-top: 2px;
 }
 
-/* Chat Message Containers */
+/* Chat Messages */
 div[data-testid="stChatMessage"] {
     background: #10131d !important;
     border: 1px solid #1c2130 !important;
@@ -256,72 +217,20 @@ div[data-testid="stChatMessage"]:has(div[data-testid="stChatMessageAvatar"] span
     border-color: #21293c !important;
 }
 
-/* Citation & Verification Cards */
-.citation-box {
-    background: #121622;
-    border: 1px solid #20273a;
-    border-radius: 10px;
-    padding: 10px 14px;
-    margin-top: 10px;
-    font-size: 0.83rem;
-}
-.citation-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #a5b4fc;
-    font-weight: 600;
-    margin-bottom: 6px;
-}
-.citation-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: #181d2c;
-    border: 1px solid #262f46;
-    border-radius: 6px;
-    padding: 4px 10px;
-    margin-right: 6px;
-    margin-top: 4px;
-    font-size: 0.78rem;
-    color: #cbd5e1;
-}
-
-.verification-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    border-radius: 20px;
-    padding: 3px 12px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    margin-top: 10px;
-}
-
-/* Follow-up question chip */
-.followup-header {
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: #94a3b8;
-    margin-top: 14px;
-    margin-bottom: 6px;
-}
-
-/* Custom Buttons */
+/* Buttons */
 .stButton > button {
     border-radius: 10px !important;
     font-weight: 500 !important;
-    font-size: 0.88rem !important;
     padding: 8px 16px !important;
-    transition: all 0.2s ease !important;
     border: 1px solid #232a3d !important;
     background: #131724 !important;
     color: #e2e8f0 !important;
+    transition: all 0.2s ease !important;
 }
 .stButton > button:hover {
     border-color: #7c3aed !important;
-    color: #ffffff !important;
     background: #1b2031 !important;
+    color: #ffffff !important;
     transform: translateY(-1px) !important;
 }
 
@@ -335,18 +244,6 @@ div[data-testid="stChatMessage"]:has(div[data-testid="stChatMessageAvatar"] span
 .stButton > button[kind="primary"]:hover {
     box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5) !important;
     filter: brightness(1.1) !important;
-}
-
-/* Form text input */
-.stTextInput > div > div > input {
-    background: #10131d !important;
-    border: 1px solid #202638 !important;
-    color: #f1f5f9 !important;
-    border-radius: 10px !important;
-}
-.stTextInput > div > div > input:focus {
-    border-color: #7c3aed !important;
-    box-shadow: 0 0 10px rgba(124, 58, 237, 0.25) !important;
 }
 
 /* Chat Input Bar */
@@ -364,7 +261,7 @@ div[data-testid="stChatInput"] > div:focus-within {
     box-shadow: 0 4px 26px rgba(124, 58, 237, 0.25) !important;
 }
 
-/* User Profile card pinned in sidebar */
+/* User Profile Badge */
 .user-profile-badge {
     display: flex;
     align-items: center;
@@ -395,15 +292,15 @@ div[data-testid="stChatInput"] > div:focus-within {
     color: #94a3b8;
 }
 
-/* Auth Brand container */
+/* Auth Pages Styling (Simple & Professional) */
 .auth-hero {
     text-align: center;
-    padding: 30px 10px 20px 10px;
+    padding: 36px 10px 20px 10px;
 }
 .auth-logo {
     width: 68px;
     height: 68px;
-    border-radius: 20px;
+    border-radius: 18px;
     background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
     display: inline-flex;
     align-items: center;
@@ -425,7 +322,7 @@ div[data-testid="stChatInput"] > div:focus-within {
     color: #a5b4fc;
     font-size: 0.95rem;
     font-weight: 500;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 .auth-tagline {
     color: #94a3b8;
@@ -437,7 +334,7 @@ div[data-testid="stChatInput"] > div:focus-within {
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# AUTHENTICATION VIEW (Clean & Jargon-Free)
+# AUTHENTICATION PAGE (Professional, Clean & Jargon-Free)
 # ════════════════════════════════════════════════════════════════════════════
 
 def show_auth_page() -> None:
@@ -455,7 +352,7 @@ def show_auth_page() -> None:
 
         if st.session_state.auth_tab == "login":
             st.markdown("#### Welcome Back")
-            st.markdown("<p style='font-size:0.85rem;color:#94a3b8;margin-bottom:16px;'>Sign in to your document assistant to continue</p>", unsafe_allow_html=True)
+            st.markdown("<p style='font-size:0.85rem;color:#94a3b8;margin-bottom:16px;'>Sign in to access your document assistant</p>", unsafe_allow_html=True)
 
             username = st.text_input("Username or Email", placeholder="Enter your username or email", key="auth_user")
             password = st.text_input("Password", type="password", placeholder="Enter your password", key="auth_pass")
@@ -482,7 +379,7 @@ def show_auth_page() -> None:
 
         else:
             st.markdown("#### Create Your Account")
-            st.markdown("<p style='font-size:0.85rem;color:#94a3b8;margin-bottom:16px;'>Get started with your intelligent document assistant</p>", unsafe_allow_html=True)
+            st.markdown("<p style='font-size:0.85rem;color:#94a3b8;margin-bottom:16px;'>Join and start chatting with your documents</p>", unsafe_allow_html=True)
 
             new_user = st.text_input("Username", placeholder="Choose a username", key="su_user")
             new_email = st.text_input("Email", placeholder="your.name@example.com", key="su_email")
@@ -510,7 +407,7 @@ def show_auth_page() -> None:
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# MAIN APPLICATION (When logged in)
+# MAIN CHATBOT APPLICATION (Clean, Single-Screen Layout)
 # ════════════════════════════════════════════════════════════════════════════
 
 def show_chatbot() -> None:
@@ -521,58 +418,57 @@ def show_chatbot() -> None:
         st.session_state.session_id = new_session_id()
     if "messages" not in st.session_state:
         st.session_state.messages = []
-    if "active_tab" not in st.session_state:
-        st.session_state.active_tab = "💬 Chat Workspace"
-    if "chat_mode" not in st.session_state:
-        st.session_state.chat_mode = "Research"
-    if "top_k" not in st.session_state:
-        st.session_state.top_k = 4
-    if "use_hybrid" not in st.session_state:
-        st.session_state.use_hybrid = True
-    if "temperature" not in st.session_state:
-        st.session_state.temperature = 0.2
-    if "queued_prompt" not in st.session_state:
-        st.session_state.queued_prompt = None
 
     session_id = st.session_state.session_id
 
-    # ── Sidebar Navigation & Management ─────────────────────────────────────────
+    # ── Sidebar ──────────────────────────────────────────────────────────────
     with st.sidebar:
         st.markdown("""
-        <div class="brand-container">
-          <div class="brand-icon">G</div>
+        <div class="sidebar-brand">
+          <div class="sidebar-logo">G</div>
           <div>
-            <div class="brand-title">GAPX-AI</div>
-            <div class="brand-sub">Intelligent Document Assistant</div>
+            <div class="sidebar-title">GAPX-AI</div>
+            <div class="sidebar-sub">Intelligent Document Assistant</div>
           </div>
         </div>
         """, unsafe_allow_html=True)
 
-        # Primary Action: Start New Chat
-        if st.button("➕ New Chat", use_container_width=True, type="primary"):
-            st.session_state.session_id = new_session_id()
-            st.session_state.messages = []
-            st.rerun()
-
-        # ── Document Upload in Sidebar ──────────────────────────────────────────
         st.divider()
-        st.markdown("##### 📂 Upload Documents")
-        sidebar_files = st.file_uploader(
-            "Upload files",
+
+        # Document and Chunk Statistics
+        docs = get_documents()
+        chunks = count_chunks()
+        mcol1, mcol2 = st.columns(2)
+        with mcol1:
+            st.markdown(
+                f'<div class="side-metric"><div class="num">{len(docs)}</div>'
+                f'<div class="lbl">Documents</div></div>',
+                unsafe_allow_html=True
+            )
+        with mcol2:
+            st.markdown(
+                f'<div class="side-metric"><div class="num">{chunks}</div>'
+                f'<div class="lbl">Chunks</div></div>',
+                unsafe_allow_html=True
+            )
+
+        # Document Uploader in Sidebar
+        st.markdown("### 📂 Upload Documents")
+        uploaded_files = st.file_uploader(
+            "Drag & drop or browse",
             type=["pdf", "txt", "md", "docx", "csv"],
             accept_multiple_files=True,
-            key="sidebar_uploader",
             label_visibility="collapsed"
         )
 
-        if sidebar_files:
+        if uploaded_files:
             existing_docs = [d["filename"] for d in get_documents()]
-            for uf in sidebar_files:
+            for uf in uploaded_files:
                 if uf.name in existing_docs:
                     st.warning(f"'{uf.name}' already uploaded.")
                     continue
 
-                with st.spinner(f"Processing {uf.name}…"):
+                with st.spinner(f"Indexing {uf.name}…"):
                     try:
                         suffix = os.path.splitext(uf.name)[1].lower()
                         file_bytes = uf.read()
@@ -585,9 +481,9 @@ def show_chatbot() -> None:
                         pages = load_document_pages(tmp_path)
                         os.unlink(tmp_path)
 
-                        chunks_list = chunk_document_pages(pages, chunk_size=250, overlap=40)
+                        chunks_list = chunk_document_pages(pages, chunk_size=500, overlap=50)
                         if not chunks_list:
-                            st.warning(f"No text extracted from '{uf.name}'.")
+                            st.warning(f"No readable text found in '{uf.name}'.")
                             continue
 
                         chunk_texts = [c["text"] for c in chunks_list]
@@ -600,115 +496,53 @@ def show_chatbot() -> None:
                             status="indexed"
                         )
                         add_chunks(chunks_list, embeddings, source=uf.name, doc_id=doc_id)
-                        st.success(f"✅ {uf.name} ready ({len(chunks_list)} sections)")
+                        st.success(f"✅ {uf.name} — {len(chunks_list)} chunks")
                         st.rerun()
                     except Exception as e:
-                        st.error(f"Error processing '{uf.name}': {e}")
+                        st.error(f"Error processing {uf.name}: {e}")
 
-        # Document count & list in sidebar
+        # Document list in sidebar
         docs = get_documents()
-        total_chunks = count_chunks()
-        sm_col1, sm_col2 = st.columns(2)
-        with sm_col1:
-            st.markdown(
-                f'<div class="side-metric"><div class="num">{len(docs)}</div><div class="lbl">Documents</div></div>',
-                unsafe_allow_html=True
-            )
-        with sm_col2:
-            st.markdown(
-                f'<div class="side-metric"><div class="num">{total_chunks}</div><div class="lbl">Chunks</div></div>',
-                unsafe_allow_html=True
-            )
-
         if docs:
-            with st.expander(f"📄 Uploaded Documents ({len(docs)})", expanded=False):
-                for doc in docs:
-                    col_n, col_x = st.columns([4, 1])
-                    with col_n:
-                        st.markdown(
-                            f'<div class="doc-chip">'
-                            f'  <div><div class="name">📄 {doc["filename"]}</div>'
-                            f'  <div class="meta">{doc["chunk_count"]} chunks</div></div>'
-                            f'</div>',
-                            unsafe_allow_html=True
-                        )
-                    with col_x:
-                        if st.button("🗑️", key=f"s_del_{doc['id']}", help="Delete document"):
-                            delete_document(doc["id"])
-                            delete_document_record(doc["id"])
-                            st.rerun()
-
-        st.divider()
-
-        # Navigation
-        nav_options = ["💬 Chat Workspace", "📚 Knowledge Base", "📊 RAG Analytics", "⚙️ Settings"]
-        active_tab = st.radio(
-            "Navigation",
-            options=nav_options,
-            index=nav_options.index(st.session_state.active_tab) if st.session_state.active_tab in nav_options else 0,
-            label_visibility="collapsed"
-        )
-        if active_tab != st.session_state.active_tab:
-            st.session_state.active_tab = active_tab
-            st.rerun()
-
-        st.divider()
-
-        # Chat History & Search
-        st.markdown("##### 🕒 Conversations")
-        search_query = st.text_input("Search chats…", placeholder="Filter conversations", label_visibility="collapsed")
-        user_sessions = get_user_sessions(username, search_query=search_query)
-
-        if user_sessions:
-            for s in user_sessions[:8]:
-                sid = s["session_id"]
-                title = s["title"]
-                is_active = (sid == session_id)
-                col_btn, col_del = st.columns([5, 1])
-                with col_btn:
-                    prefix = "👉 " if is_active else "💬 "
-                    if st.button(f"{prefix}{title}", key=f"sess_{sid}", use_container_width=True):
-                        st.session_state.session_id = sid
-                        st.session_state.messages = get_history(sid, username=username)
-                        st.session_state.active_tab = "💬 Chat Workspace"
+            st.markdown("### 📄 Uploaded Documents")
+            for doc in docs:
+                col_n, col_x = st.columns([4, 1])
+                with col_n:
+                    st.markdown(
+                        f'<div class="doc-chip">'
+                        f'<div class="name">📄 {doc["filename"]}</div>'
+                        f'<div class="meta">{doc["chunk_count"]} chunks</div>'
+                        f'</div>',
+                        unsafe_allow_html=True
+                    )
+                with col_x:
+                    if st.button("🗑️", key=f"del_{doc['id']}", help="Delete document"):
+                        delete_document(doc["id"])
+                        delete_document_record(doc["id"])
                         st.rerun()
-                with col_del:
-                    if st.button("✖", key=f"delsess_{sid}", help="Delete conversation"):
-                        delete_session(sid, username=username)
-                        if is_active:
-                            st.session_state.session_id = new_session_id()
-                            st.session_state.messages = []
-                        st.rerun()
-        else:
-            st.caption("No previous conversations.")
 
         st.divider()
 
-        # Export Conversation Options
-        st.markdown("##### 📥 Export Conversation")
-        txt_data = export_chat_as_txt(session_id, username=username)
-        md_data = export_chat_as_markdown(session_id, username=username)
-        col_ex1, col_ex2 = st.columns(2)
-        with col_ex1:
-            st.download_button(
-                label="📄 TXT",
-                data=txt_data,
-                file_name=f"gapx_chat_{session_id[:8]}.txt",
-                mime="text/plain",
-                use_container_width=True
-            )
-        with col_ex2:
-            st.download_button(
-                label="📝 Markdown",
-                data=md_data,
-                file_name=f"gapx_chat_{session_id[:8]}.md",
-                mime="text/markdown",
-                use_container_width=True
-            )
+        col_a, col_b = st.columns(2)
+        with col_a:
+            if st.button("🧹 Clear Chat", use_container_width=True):
+                clear_history(session_id, username=username)
+                st.session_state.messages = []
+                st.rerun()
+        with col_b:
+            if st.button("🗑️ Reset All", use_container_width=True):
+                reset_store()
+                clear_history(session_id, username=username)
+                st.session_state.messages = []
+                conn = __import__("sqlite3").connect("chat_history.db")
+                conn.execute("DELETE FROM documents")
+                conn.commit()
+                conn.close()
+                st.rerun()
 
         st.divider()
 
-        # User Profile & Logout
+        # User profile & Logout
         st.markdown(f"""
         <div class="user-profile-badge">
           <div class="user-avatar">👤</div>
@@ -723,479 +557,71 @@ def show_chatbot() -> None:
             logout_user()
             st.rerun()
 
-    # ════════════════════════════════════════════════════════════════════════════
-    # VIEW 1: 💬 CHAT WORKSPACE
-    # ════════════════════════════════════════════════════════════════════════════
-    if st.session_state.active_tab == "💬 Chat Workspace":
-        doc_count = len(get_documents())
+    # ── Main Chat Area ────────────────────────────────────────────────────────
+    st.markdown("""
+    <div class="chat-header">
+      <div class="chat-header-logo">G</div>
+      <div>
+        <h1>GAPX-AI</h1>
+        <p>Intelligent Document Assistant · Ask · Discover · Get Trusted Answers</p>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-        # Top Bar: Visible, Clean, No Jargon
-        tb_col1, tb_col2 = st.columns([3, 2])
-        with tb_col1:
+    # Load per-user history from DB on first load
+    if not st.session_state.messages:
+        st.session_state.messages = get_history(session_id, username=username)
+
+    # Display conversation messages
+    for msg in st.session_state.messages:
+        avatar = "🔮" if msg["role"] == "assistant" else "🧑"
+        with st.chat_message(msg["role"], avatar=avatar):
+            st.markdown(msg["content"])
+
+    # Welcome message when conversation is empty
+    if not st.session_state.messages:
+        with st.chat_message("assistant", avatar="🔮"):
             st.markdown(
-                f'<div style="padding-top:4px;">'
-                f'<div style="font-size:1.15rem;font-weight:700;color:#f8fafc;display:flex;align-items:center;gap:10px;">'
-                f'<span>💬 Document Assistant</span>'
-                f'<span class="status-pill">● {doc_count} Documents Ready</span>'
-                f'</div>'
-                f'<div style="font-size:0.75rem;color:#94a3b8;margin-top:2px;">Ask questions and get verified answers from your files</div>'
-                f'</div>',
-                unsafe_allow_html=True
+                f"👋 **Welcome back, {username}!** I'm **GAPX-AI**, your Intelligent Document Assistant.\n\n"
+                "📂 **Upload documents** in the sidebar (PDF, DOCX, TXT, CSV) and ask me anything about them.\n\n"
+                "✨ Answers are strictly verified and grounded in your uploaded files with source citations."
             )
-        with tb_col2:
-            selected_mode = st.selectbox(
-                "Response Mode",
-                options=list(CHAT_MODES.keys()),
-                format_func=lambda m: CHAT_MODES[m]["title"],
-                index=list(CHAT_MODES.keys()).index(st.session_state.chat_mode),
-                label_visibility="collapsed"
-            )
-            if selected_mode != st.session_state.chat_mode:
-                st.session_state.chat_mode = selected_mode
-                st.rerun()
 
-        st.write("")
+    # ── Chat Input ────────────────────────────────────────────────────────────
+    if prompt := st.chat_input("Ask a question about your documents…"):
+        with st.chat_message("user", avatar="🧑"):
+            st.markdown(prompt)
 
-        # Load DB history on initial load
-        if not st.session_state.messages:
-            st.session_state.messages = get_history(session_id, username=username)
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        save_message(session_id, "user", prompt, username=username)
 
-        # Welcome screen if no messages
-        if not st.session_state.messages:
-            # Display banner if available
-            if os.path.exists("assets/gapx_banner.png"):
-                st.image("assets/gapx_banner.png", use_column_width=True)
-            else:
-                st.markdown(f"""
-                <div style="background:#111420;border:1px solid #1f2537;border-radius:14px;padding:30px 24px;margin-bottom:24px;text-align:center;">
-                  <div style="font-size:2.4rem;margin-bottom:8px;">✨</div>
-                  <h2 style="font-size:1.7rem;font-weight:800;color:#ffffff;margin:0 0 4px 0;">GAPX-AI</h2>
-                  <div style="color:#a5b4fc;font-size:0.95rem;font-weight:600;margin-bottom:6px;">Intelligent Document Assistant</div>
-                  <p style="color:#94a3b8;font-size:0.88rem;max-width:550px;margin:0 auto 16px auto;">
-                    Ask · Discover · Get Trusted Answers grounded in your documents.
-                  </p>
-                  <div style="display:inline-flex;gap:12px;background:#181c2b;border:1px solid #283146;border-radius:20px;padding:6px 16px;font-size:0.8rem;color:#cbd5e1;">
-                    <span>📚 <b>{doc_count}</b> Documents Ready</span>
-                    <span>•</span>
-                    <span>🧩 <b>{count_chunks()}</b> Knowledge Chunks</span>
-                  </div>
-                </div>
-                """, unsafe_allow_html=True)
+        # Retrieve context using improved Hybrid Search (Vector + BM25)
+        hits = retrieve(prompt) if count_chunks() > 0 else []
+        context = format_context(hits)
+        sources_text = format_sources(hits)
 
-            # 4 starter suggested questions
-            st.markdown("<div style='font-size:0.85rem;font-weight:600;color:#94a3b8;margin-bottom:8px;'>SUGGESTED QUESTIONS:</div>", unsafe_allow_html=True)
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button("📄 Summarize the key takeaways from the documents", use_container_width=True):
-                    st.session_state.queued_prompt = "Summarize the key takeaways from the uploaded documents."
-                    st.rerun()
-                if st.button("🔍 What are the main concepts and specifications discussed?", use_container_width=True):
-                    st.session_state.queued_prompt = "What are the main concepts and specifications discussed?"
-                    st.rerun()
-            with col2:
-                if st.button("📊 Explain the core metrics, data points, and results", use_container_width=True):
-                    st.session_state.queued_prompt = "Explain the core metrics, data points, and results."
-                    st.rerun()
-                if st.button("⚠️ Identify any limitations, risks, or conditions noted", use_container_width=True):
-                    st.session_state.queued_prompt = "Identify any limitations, risks, or conditions noted in the documents."
-                    st.rerun()
+        # Stream high-accuracy response
+        with st.chat_message("assistant", avatar="🔮"):
+            placeholder = st.empty()
+            full_response = ""
 
-        # Render conversation messages
-        for idx, msg in enumerate(st.session_state.messages):
-            role = msg["role"]
-            avatar = "✨" if role == "assistant" else "🧑"
-            with st.chat_message(role, avatar=avatar):
-                st.markdown(msg["content"])
+            history_for_llm = [
+                {"role": m["role"], "content": m["content"]}
+                for m in st.session_state.messages
+            ]
 
-                # Render metadata cards for assistant messages if present
-                if role == "assistant":
-                    citations = msg.get("citations", [])
-                    verification = msg.get("verification", None)
-                    passages = msg.get("passages", [])
-                    followups = msg.get("followups", [])
+            for chunk in chat(history_for_llm, context=context, stream=True):
+                full_response += chunk
+                placeholder.markdown(full_response + "▌")
 
-                    # Citations Badge List
-                    if citations:
-                        cit_html = '<div class="citation-box"><div class="citation-header">📌 Source References:</div><div>'
-                        for c in citations:
-                            src = c["source"]
-                            pg = c["page"]
-                            score_pct = int(c.get("score", 0.0) * 100)
-                            cit_html += f'<span class="citation-item">📄 <b>{src}</b> (Page {pg}) • {score_pct}% match</span>'
-                        cit_html += '</div></div>'
-                        st.markdown(cit_html, unsafe_allow_html=True)
+            if sources_text:
+                full_response += f"\n\n{sources_text}"
 
-                    # Verification Status Badge
-                    if verification:
-                        v_color = verification.get("badge_color", "#10b981")
-                        v_label = verification.get("label", "Verified in Documents")
-                        v_expl = verification.get("explanation", "")
-                        st.markdown(
-                            f'<div class="verification-badge" style="background:{v_color}20;border:1px solid {v_color}60;color:{v_color};">'
-                            f'🛡️ {v_label} — <span style="font-weight:400;opacity:0.9;">{v_expl}</span>'
-                            f'</div>',
-                            unsafe_allow_html=True
-                        )
+            placeholder.markdown(full_response)
 
-                    # Expandable Context Inspector
-                    if passages:
-                        with st.expander("🔍 Inspect Supporting Passages"):
-                            for p_idx, p in enumerate(passages, 1):
-                                st.markdown(f"**Passage {p_idx} — `{p.get('source', 'Doc')}` (Page {p.get('page', 1)})**")
-                                st.info(p.get("text", ""))
-
-                    # Interactive Follow-up Question Chips
-                    if followups:
-                        st.markdown('<div class="followup-header">💡 Suggested Follow-ups:</div>', unsafe_allow_html=True)
-                        f_cols = st.columns(len(followups))
-                        for f_idx, (q_text, f_col) in enumerate(zip(followups, f_cols)):
-                            with f_col:
-                                if st.button(f"👉 {q_text}", key=f"fup_{idx}_{f_idx}", use_container_width=True):
-                                    st.session_state.queued_prompt = q_text
-                                    st.rerun()
-
-        # Handle Chat Input (either typed or queued from follow-up)
-        prompt = st.chat_input("Message GAPX-AI about your documents…")
-        if st.session_state.queued_prompt:
-            prompt = st.session_state.queued_prompt
-            st.session_state.queued_prompt = None
-
-        if prompt:
-            # Display user message
-            with st.chat_message("user", avatar="🧑"):
-                st.markdown(prompt)
-
-            user_msg_entry = {"role": "user", "content": prompt}
-            st.session_state.messages.append(user_msg_entry)
-            save_message(session_id, "user", prompt, username=username)
-
-            # Retrieve context with latency measurement
-            with st.spinner("Finding relevant document passages…"):
-                hits, retrieval_ms = retrieve_with_latency(
-                    prompt,
-                    top_k=st.session_state.top_k,
-                    use_hybrid=st.session_state.use_hybrid
-                )
-                context = format_context(hits)
-                citations = format_citations_list(hits)
-
-            # Stream Assistant Response
-            with st.chat_message("assistant", avatar="✨"):
-                placeholder = st.empty()
-                full_response = ""
-                history_for_llm = [
-                    {"role": m["role"], "content": m["content"]}
-                    for m in st.session_state.messages
-                ]
-
-                t_llm_start = time.perf_counter()
-                for chunk in chat(
-                    history_for_llm,
-                    context=context,
-                    mode=st.session_state.chat_mode,
-                    stream=True,
-                    temperature=st.session_state.temperature
-                ):
-                    full_response += chunk
-                    placeholder.markdown(full_response + "▌")
-
-                placeholder.markdown(full_response)
-                llm_ms = round((time.perf_counter() - t_llm_start) * 1000, 2)
-
-                # Grounding Verification
-                verification = verify_answer(full_response, hits)
-                v_color = verification.get("badge_color", "#10b981")
-                v_label = verification.get("label", "Verified in Documents")
-                v_expl = verification.get("explanation", "")
-
-                # Render Citations
-                if citations:
-                    cit_html = '<div class="citation-box"><div class="citation-header">📌 Source References:</div><div>'
-                    for c in citations:
-                        src = c["source"]
-                        pg = c["page"]
-                        score_pct = int(c.get("score", 0.0) * 100)
-                        cit_html += f'<span class="citation-item">📄 <b>{src}</b> (Page {pg}) • {score_pct}% match</span>'
-                    cit_html += '</div></div>'
-                    st.markdown(cit_html, unsafe_allow_html=True)
-
-                # Render Verification Badge
-                st.markdown(
-                    f'<div class="verification-badge" style="background:{v_color}20;border:1px solid {v_color}60;color:{v_color};">'
-                    f'🛡️ {v_label} — <span style="font-weight:400;opacity:0.9;">{v_expl}</span>'
-                    f'</div>',
-                    unsafe_allow_html=True
-                )
-
-                # Expandable Inspector
-                if hits:
-                    with st.expander("🔍 Inspect Supporting Passages"):
-                        for p_idx, p in enumerate(hits, 1):
-                            st.markdown(f"**Passage {p_idx} — `{p.get('source', 'Doc')}` (Page {p.get('page', 1)})**")
-                            st.info(p.get("text", ""))
-
-                # Generate 3 Follow-up Questions
-                followups = generate_followup_questions(prompt, full_response, context=context)
-
-                # Log Telemetry Analytics
-                avg_rel = (sum(h.get("score", 0.0) for h in hits) / len(hits)) if hits else 0.0
-                log_analytics(
-                    session_id=session_id,
-                    username=username,
-                    query=prompt,
-                    retrieval_ms=retrieval_ms,
-                    llm_ms=llm_ms,
-                    chunks_retrieved=len(hits),
-                    avg_relevance=avg_rel,
-                    mode=st.session_state.chat_mode
-                )
-
-            # Persist assistant message with metadata
-            assistant_msg_entry = {
-                "role": "assistant",
-                "content": full_response,
-                "citations": citations,
-                "verification": verification,
-                "passages": hits,
-                "followups": followups
-            }
-            st.session_state.messages.append(assistant_msg_entry)
-            save_message(session_id, "assistant", full_response, username=username)
-            st.rerun()
-
-    # ════════════════════════════════════════════════════════════════════════════
-    # VIEW 2: 📚 KNOWLEDGE BASE
-    # ════════════════════════════════════════════════════════════════════════════
-    elif st.session_state.active_tab == "📚 Knowledge Base":
-        st.markdown("### 📚 Knowledge Base")
-        st.markdown("<p style='color:#94a3b8;font-size:0.88rem;'>Upload and manage your document collection.</p>", unsafe_allow_html=True)
-
-        # Upload Area
-        st.markdown("##### 📤 Add New Documents")
-        uploaded_files = st.file_uploader(
-            "Upload files (PDF, DOCX, TXT, MD, CSV)",
-            type=["pdf", "txt", "md", "docx", "csv"],
-            accept_multiple_files=True
-        )
-
-        if uploaded_files:
-            existing_docs = [d["filename"] for d in get_documents()]
-            for uf in uploaded_files:
-                if uf.name in existing_docs:
-                    st.warning(f"'{uf.name}' already exists in your library.")
-                    continue
-
-                with st.spinner(f"Reading and indexing {uf.name}…"):
-                    try:
-                        suffix = os.path.splitext(uf.name)[1].lower()
-                        file_bytes = uf.read()
-                        size_kb = len(file_bytes) / 1024.0
-
-                        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-                            tmp.write(file_bytes)
-                            tmp_path = tmp.name
-
-                        pages = load_document_pages(tmp_path)
-                        os.unlink(tmp_path)
-
-                        chunks_list = chunk_document_pages(pages, chunk_size=250, overlap=40)
-                        if not chunks_list:
-                            st.warning(f"No readable text in '{uf.name}'.")
-                            continue
-
-                        chunk_texts = [c["text"] for c in chunks_list]
-                        embeddings = embed_texts(chunk_texts)
-                        doc_id = save_document(
-                            filename=uf.name,
-                            file_type=suffix.lstrip("."),
-                            chunk_count=len(chunks_list),
-                            file_size_kb=size_kb,
-                            status="indexed"
-                        )
-                        add_chunks(chunks_list, embeddings, source=uf.name, doc_id=doc_id)
-                        st.success(f"✅ Successfully indexed **{uf.name}** ({len(chunks_list)} chunks, {round(size_kb, 1)} KB)")
-                        st.rerun()
-                    except Exception as e:
-                        st.error(f"Error indexing '{uf.name}': {e}")
-
-        st.divider()
-
-        # Indexed Documents Table / Inventory
-        st.markdown("##### 📄 Document Library")
-        docs = get_documents()
-        if docs:
-            for doc in docs:
-                with st.container():
-                    col_info, col_del = st.columns([5, 1])
-                    with col_info:
-                        size_str = f"{doc.get('file_size_kb', 0.0)} KB" if doc.get('file_size_kb') else "N/A"
-                        st.markdown(
-                            f'<div style="background:#111420;border:1px solid #1e2537;border-radius:10px;padding:12px 16px;margin-bottom:8px;">'
-                            f'<div style="display:flex;align-items:center;gap:10px;">'
-                            f'<span style="font-size:1.2rem;">📄</span>'
-                            f'<div>'
-                            f'<div style="font-weight:600;color:#f1f5f9;font-size:0.92rem;">{doc["filename"]}</div>'
-                            f'<div style="font-size:0.75rem;color:#94a3b8;margin-top:2px;">'
-                            f'Format: <span style="color:#a5b4fc;">{doc["file_type"].upper()}</span> • '
-                            f'Size: <span style="color:#a5b4fc;">{size_str}</span> • '
-                            f'Sections: <span style="color:#a5b4fc;">{doc["chunk_count"]}</span> • '
-                            f'Added: {doc["uploaded_at"]}'
-                            f'</div></div></div></div>',
-                            unsafe_allow_html=True
-                        )
-                    with col_del:
-                        st.write("")
-                        if st.button("🗑️ Remove", key=f"kb_del_{doc['id']}", use_container_width=True):
-                            delete_document(doc["id"])
-                            delete_document_record(doc["id"])
-                            st.success(f"Removed '{doc['filename']}'")
-                            st.rerun()
-        else:
-            st.info("No documents uploaded yet. Upload files above to get started.")
-
-    # ════════════════════════════════════════════════════════════════════════════
-    # VIEW 3: 📊 RAG ANALYTICS DASHBOARD
-    # ════════════════════════════════════════════════════════════════════════════
-    elif st.session_state.active_tab == "📊 RAG Analytics":
-        st.markdown("### 📊 Performance & Retrieval Analytics")
-        st.markdown("<p style='color:#94a3b8;font-size:0.88rem;'>Real-time metrics measuring retrieval speed, response time, and answer relevance.</p>", unsafe_allow_html=True)
-
-        summary = get_analytics_summary()
-        docs = get_documents()
-        total_chunks = count_chunks()
-
-        # KPI Metric Cards
-        kpi1, kpi2, kpi3, kpi4 = st.columns(4)
-        with kpi1:
-            st.markdown(f"""
-            <div class="metric-box">
-              <div class="metric-num">{len(docs)}</div>
-              <div class="metric-label">Indexed Documents</div>
-            </div>
-            """, unsafe_allow_html=True)
-        with kpi2:
-            st.markdown(f"""
-            <div class="metric-box">
-              <div class="metric-num">{total_chunks}</div>
-              <div class="metric-label">Knowledge Chunks</div>
-            </div>
-            """, unsafe_allow_html=True)
-        with kpi3:
-            st.markdown(f"""
-            <div class="metric-box">
-              <div class="metric-num">{summary['avg_retrieval_ms']} <span style="font-size:1rem;color:#94a3b8;">ms</span></div>
-              <div class="metric-label">Avg Retrieval Time</div>
-            </div>
-            """, unsafe_allow_html=True)
-        with kpi4:
-            st.markdown(f"""
-            <div class="metric-box">
-              <div class="metric-num">{summary['avg_llm_ms']} <span style="font-size:1rem;color:#94a3b8;">ms</span></div>
-              <div class="metric-label">Avg Response Time</div>
-            </div>
-            """, unsafe_allow_html=True)
-
-        kpi5, kpi6, kpi7, kpi8 = st.columns(4)
-        with kpi5:
-            st.markdown(f"""
-            <div class="metric-box">
-              <div class="metric-num">{summary['total_queries']}</div>
-              <div class="metric-label">Total Questions Asked</div>
-            </div>
-            """, unsafe_allow_html=True)
-        with kpi6:
-            st.markdown(f"""
-            <div class="metric-box">
-              <div class="metric-num">{summary['avg_chunks']}</div>
-              <div class="metric-label">Avg Sources / Answer</div>
-            </div>
-            """, unsafe_allow_html=True)
-        with kpi7:
-            st.markdown(f"""
-            <div class="metric-box">
-              <div class="metric-num">{summary['avg_relevance']}%</div>
-              <div class="metric-label">Avg Relevance Score</div>
-            </div>
-            """, unsafe_allow_html=True)
-        with kpi8:
-            st.markdown(f"""
-            <div class="metric-box">
-              <div class="metric-num" style="color:#10b981;">Active</div>
-              <div class="metric-label">System Status</div>
-            </div>
-            """, unsafe_allow_html=True)
-
-        st.divider()
-
-        # Recent Query Log
-        st.markdown("##### 📜 Recent Query Activity")
-        recent = summary.get("recent_queries", [])
-        if recent:
-            log_data = []
-            for r in recent:
-                log_data.append({
-                    "Query": r["query"],
-                    "Search Time": f"{r['retrieval_ms']} ms",
-                    "Response Time": f"{r['llm_ms']} ms",
-                    "Passages Used": r["chunks_retrieved"],
-                    "Relevance": f"{int(r['avg_relevance'] * 100)}%",
-                    "Mode": r["mode"],
-                    "Date & Time": r["timestamp"]
-                })
-            st.dataframe(log_data, use_container_width=True)
-        else:
-            st.info("No queries recorded yet. Ask questions in the Chat Workspace to see live metrics.")
-
-    # ════════════════════════════════════════════════════════════════════════════
-    # VIEW 4: ⚙️ SETTINGS
-    # ════════════════════════════════════════════════════════════════════════════
-    elif st.session_state.active_tab == "⚙️ Settings":
-        st.markdown("### ⚙️ Settings")
-        st.markdown("<p style='color:#94a3b8;font-size:0.88rem;'>Configure search depth, response behavior, and storage.</p>", unsafe_allow_html=True)
-
-        col_s1, col_s2 = st.columns(2)
-        with col_s1:
-            st.markdown("##### 🔍 Search Tuning")
-            top_k_val = st.slider("Passages Retrieved per Question", min_value=2, max_value=8, value=st.session_state.top_k)
-            st.session_state.top_k = top_k_val
-
-            hybrid_toggle = st.toggle("Enable Hybrid Search (Keyword + Semantic)", value=st.session_state.use_hybrid)
-            st.session_state.use_hybrid = hybrid_toggle
-
-            st.caption("Combines semantic understanding with exact word matching for higher precision on names and numbers.")
-
-        with col_s2:
-            st.markdown("##### 🤖 Assistant Configuration")
-            temp_val = st.slider("Creativity / Temperature", min_value=0.0, max_value=1.0, value=st.session_state.temperature, step=0.05)
-            st.session_state.temperature = temp_val
-
-            # Developer / Technical Specs kept strictly inside Settings
-            st.text_input("Active AI Engine", value=os.getenv("LLAMA_MODEL", "openai/gpt-oss-120b"), disabled=True)
-            st.text_input("Embedding Model", value=os.getenv("EMBED_MODEL", "all-MiniLM-L6-v2"), disabled=True)
-
-        st.divider()
-
-        # Database Management
-        st.markdown("##### 🗄️ Storage & History")
-        col_db1, col_db2 = st.columns(2)
-        with col_db1:
-            if st.button("🧹 Clear Current Conversation", use_container_width=True):
-                clear_history(session_id, username=username)
-                st.session_state.messages = []
-                st.success("Conversation history cleared.")
-                st.rerun()
-        with col_db2:
-            if st.button("🗑️ Reset All Documents & History", use_container_width=True):
-                reset_store()
-                clear_history(session_id, username=username)
-                st.session_state.messages = []
-                conn = __import__("sqlite3").connect("chat_history.db")
-                conn.execute("DELETE FROM documents")
-                conn.execute("DELETE FROM rag_analytics")
-                conn.commit()
-                conn.close()
-                st.success("Knowledge base and history reset successfully.")
-                st.rerun()
+        st.session_state.messages.append({"role": "assistant", "content": full_response})
+        save_message(session_id, "assistant", full_response, username=username)
+        st.rerun()
 
 
 # ════════════════════════════════════════════════════════════════════════════

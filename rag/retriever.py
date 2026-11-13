@@ -119,3 +119,20 @@ def format_citations_list(hits: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
                 "full_text": raw_text
             })
     return citations
+
+
+def format_sources(hits: List[Dict[str, Any]]) -> str:
+    """Format source badges string with file names and page numbers."""
+    if not hits:
+        return ""
+    sources = []
+    seen = set()
+    for h in hits:
+        name = h.get("source", "Document")
+        page = h.get("page", 1)
+        tag = f"`{name} (p.{page})`"
+        if tag not in seen:
+            seen.add(tag)
+            sources.append(tag)
+    return "📎 **Sources:** " + " · ".join(sources)
+
