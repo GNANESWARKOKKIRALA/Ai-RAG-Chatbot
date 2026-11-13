@@ -145,6 +145,48 @@ section[data-testid="stSidebar"] .block-container {
     margin-top: 4px;
 }
 
+/* Sidebar Document Chips & Metrics */
+.side-metric {
+    background: #141824;
+    border: 1px solid #1f2638;
+    border-radius: 8px;
+    padding: 8px 10px;
+    text-align: center;
+    margin-bottom: 8px;
+}
+.side-metric .num {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #818cf8;
+}
+.side-metric .lbl {
+    font-size: 0.7rem;
+    color: #94a3b8;
+}
+.doc-chip {
+    background: #141824;
+    border: 1px solid #1f2638;
+    border-radius: 8px;
+    padding: 6px 10px;
+    margin-bottom: 6px;
+    font-size: 0.8rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.doc-chip .name {
+    color: #f1f5f9;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 140px;
+}
+.doc-chip .meta {
+    color: #64748b;
+    font-size: 0.72rem;
+}
+
 /* Chat Message Containers */
 div[data-testid="stChatMessage"] {
     background: #11141e !important;
@@ -467,7 +509,91 @@ def show_chatbot() -> None:
             st.session_state.messages = []
             st.rerun()
 
-        st.write("")
+        # ── Document Upload in Sidebar ──────────────────────────────────────────
+        st.divider()
+        st.markdown("##### 📂 Upload Documents")
+        sidebar_files = st.file_uploader(
+            "Upload files",
+            type=["pdf", "txt", "md", "docx", "csv"],
+            accept_multiple_files=True,
+            key="sidebar_uploader",
+            label_visibility="collapsed"
+        )
+
+        if sidebar_files:
+            existing_docs = [d["filename"] for d in get_documents()]
+            for uf in sidebar_files:
+                if uf.name in existing_docs:
+                    st.warning(f"'{uf.name}' already indexed.")
+                    continue
+
+                with st.spinner(f"Indexing {uf.name}…"):
+                    try:
+                        suffix = os.path.splitext(uf.name)[1].lower()
+                        file_bytes = uf.read()
+                        size_kb = len(file_bytes) / 1024.0
+
+                        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+                            tmp.write(file_bytes)
+                            tmp_path = tmp.name
+
+                        pages = load_document_pages(tmp_path)
+                        os.unlink(tmp_path)
+
+                        chunks_list = chunk_document_pages(pages, chunk_size=250, overlap=40)
+                        if not chunks_list:
+                            st.warning(f"No text extracted from '{uf.name}'.")
+                            continue
+
+                        chunk_texts = [c["text"] for c in chunks_list]
+                        embeddings = embed_texts(chunk_texts)
+                        doc_id = save_document(
+                            filename=uf.name,
+                            file_type=suffix.lstrip("."),
+                            chunk_count=len(chunks_list),
+                            file_size_kb=size_kb,
+                            status="indexed"
+                        )
+                        add_chunks(chunks_list, embeddings, source=uf.name, doc_id=doc_id)
+                        st.success(f"✅ {uf.name} ({len(chunks_list)} chunks)")
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"❌ Error: {e}")
+
+        # Quick Metrics & Uploaded Document List
+        docs = get_documents()
+        total_chunks = count_chunks()
+        sm_col1, sm_col2 = st.columns(2)
+        with sm_col1:
+            st.markdown(
+                f'<div class="side-metric"><div class="num">{len(docs)}</div><div class="lbl">Documents</div></div>',
+                unsafe_allow_html=True
+            )
+        with sm_col2:
+            st.markdown(
+                f'<div class="side-metric"><div class="num">{total_chunks}</div><div class="lbl">Chunks</div></div>',
+                unsafe_allow_html=True
+            )
+
+        if docs:
+            with st.expander(f"📄 Uploaded Documents ({len(docs)})", expanded=False):
+                for doc in docs:
+                    col_n, col_x = st.columns([4, 1])
+                    with col_n:
+                        st.markdown(
+                            f'<div class="doc-chip">'
+                            f'  <div><div class="name">📄 {doc["filename"]}</div>'
+                            f'  <div class="meta">{doc["chunk_count"]} chunks</div></div>'
+                            f'</div>',
+                            unsafe_allow_html=True
+                        )
+                    with col_x:
+                        if st.button("🗑️", key=f"s_del_{doc['id']}", help="Delete document"):
+                            delete_document(doc["id"])
+                            delete_document_record(doc["id"])
+                            st.rerun()
+
+        st.divider()
 
         # Navigation
         nav_options = ["💬 Chat Workspace", "📚 Knowledge Base", "📊 RAG Analytics", "⚙️ Settings"]
