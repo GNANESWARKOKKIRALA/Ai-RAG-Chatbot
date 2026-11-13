@@ -1,112 +1,144 @@
-# 🤖 AI RAG Chatbot — GPT OSS 120B via Groq
+# 🧠 NexusRAG — Enterprise AI Document Intelligence Platform
 
-A production-grade **Retrieval-Augmented Generation (RAG)** chatbot built with:
+A production-grade **Retrieval-Augmented Generation (RAG)** platform powered by **Groq**, **ChromaDB**, **Sentence Transformers**, and **SQLite**, designed for accurate, evidence-backed document inquiry and intelligence.
 
-- 🦙 **GPT OSS 120B** — powerful open-source LLM
-- ⚡ **Groq API** — world's fastest LLM inference (~300 tokens/sec)
-- 🗃️ **ChromaDB** — local vector database for semantic search
-- 🗄️ **SQLite** — chat history & document metadata storage
-- 📄 **Multi-format support** — PDF, DOCX, TXT, MD, CSV
-- 🎨 **Streamlit UI** — clean, dark-themed web interface
+---
+
+## 🌟 Key Features
+
+### 🔍 Advanced Hybrid Retrieval & Reranking
+- **Dense Vector Search**: Powered by `all-MiniLM-L6-v2` via ChromaDB cosine similarity.
+- **Sparse BM25 Lexical Search**: High-precision keyword, code, and acronym matching.
+- **Reciprocal Rank Fusion (RRF)**: Combines dense semantic and sparse lexical rankings for maximum retrieval precision.
+- **Sentence-Boundary Aware Chunking**: Overlapping chunks that respect punctuation and paragraph boundaries.
+- **Page-Level Metadata**: Preserves document name and exact page numbers across all supported file types (PDF, DOCX, TXT, MD, CSV).
+
+### 🛡️ Grounding Verification & Citations
+- **Source Citations**: Displays source file names, page numbers, and calibrated relevance scores.
+- **Context Passage Inspector**: Expandable inspection panel allowing users to verify the exact text chunks used to answer.
+- **Factual Grounding Check**: Automatically verifies whether the generated response is factually supported by retrieved document text or falls back to general knowledge.
+
+### 🎭 4 Document-Based Chat Modes
+- 🔬 **Research Mode**: Comprehensive, rigorous, evidence-based responses with deep analysis and specific page citations.
+- 💡 **Simple Mode**: Plain-English explanations, intuitive analogies, and approachable language.
+- ⚙️ **Technical Mode**: Engineering-grade detail, specifications, architectural patterns, and exact data points.
+- 📋 **Summary Mode**: Concise executive briefing with key findings and bulleted takeaways.
+
+### 💡 Smart Follow-up Questions
+- Automatically generates 3 context-aware follow-up questions after each response based on the document's content.
+- Click any suggestion chip to submit it directly as your next query.
+
+### 📊 Real-Time RAG Analytics & Telemetry
+- Measures **real** performance benchmarks:
+  - Document & chunk indexing counts.
+  - End-to-end Retrieval Latency (ms).
+  - LLM Response Latency (ms).
+  - Average chunks retrieved per query.
+  - Average calibrated relevance score (%).
+- Recent query telemetry audit log.
+
+### 🕒 Multi-Session Management & Chat Export
+- Create, rename, search, and delete individual conversation sessions.
+- Export transcripts as clean **TXT** or **Markdown** files with a single click.
+- Authenticated per-user chat history stored securely in SQLite with bcrypt password hashing.
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Clone the repo
+### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/rag-chatbot.git
-cd  AI RAG-Chatbot
+git clone https://github.com/GNANESWARKOKKIRALA/Ai-RAG-Chatbot.git
+cd Ai-RAG-Chatbot
 ```
 
-### 2. Install dependencies
+### 2. Activate Virtual Environment & Install Dependencies
 
 ```bash
+# Windows
+.\venv\Scripts\activate
+
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-### 3. Get your FREE Groq API Key
+### 3. Configure Environment Variables
 
-1. Visit [console.groq.com](https://console.groq.com)
-2. Sign up (free, no credit card needed)
-3. Go to **API Keys** → Create new key
+Create or edit your `.env` file:
 
-### 4. Set up environment
-
-```bash
-cp .env.example .env
-# Edit .env and add your GROQ_API_KEY
+```env
+GROQ_API_KEY=your_groq_api_key_here
+CHROMA_DB_PATH=./chroma_store
+EMBED_MODEL=all-MiniLM-L6-v2
+TOP_K_CHUNKS=4
+LLAMA_MODEL=openai/gpt-oss-120b
 ```
 
-### 5. Run the app
+### 4. Launch Application
 
 ```bash
 streamlit run app.py
 ```
 
-Open `http://localhost:8501` in your browser 🎉
+Open `http://localhost:8501` in your browser.
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ Architecture & Pipeline Flow
 
 ```mermaid
 graph TD
-    subgraph Client [Client UI]
-        U[Streamlit App / app.py]
+    subgraph Frontend [User Interface / app.py]
+        UI[Streamlit SaaS Dashboard]
+        MODES[Chat Modes & Settings]
+        ANALYTICS[Telemetry Dashboard]
     end
 
-    subgraph Logic [Application Logic]
-        L[Document Loader / loader.py]
-        C[Text Chunker / chunker.py]
+    subgraph Ingestion [Ingestion Pipeline]
+        L[Loader / loader.py - Page Extract]
+        C[Chunker / chunker.py - Sentence Aware]
         E[Embedder / embedder.py]
-        R[Retriever / retriever.py]
+    end
+
+    subgraph HybridEngine [Hybrid Retrieval & Verification]
+        VS[(ChromaDB Vector Store)]
+        BM25[BM25 Lexical Index]
+        RRF[Reciprocal Rank Fusion]
+        VER[Verifier / verifier.py]
+    end
+
+    subgraph LLM [Inference & Generation]
         G[Groq Client / groq_client.py]
+        API[Groq API / openai/gpt-oss-120b]
+        FUP[Follow-up Question Generator]
     end
 
-    subgraph Storage [Data & LLM API]
-        DB[(SQLite DB / History & Auth)]
-        VS[(ChromaDB / Vector Store)]
-        LLM[Groq GPT OSS API]
+    subgraph Storage [Persistent Storage]
+        SQL[(SQLite / chat_history.db)]
     end
 
-    %% Flow lines
-    U -->|Upload Files| L
-    L -->|Raw Text| C
-    C -->|Text Chunks| E
-    E -->|Vectors| VS
+    %% Ingestion Flow
+    UI -->|Upload PDF, DOCX, TXT, CSV| L
+    L -->|Page-Indexed Text| C
+    C -->|Semantic Chunks| E
+    E -->|Vectors + Metadata| VS
+    C -->|Text Chunks| BM25
 
-    U -->|User Queries| R
-    R -->|Query Vector| E
-    R -->|Cosine Search| VS
-    R -->|Retrieved Context| G
-    
-    U -->|Save & Load History| DB
-    G -->|Stream Responses| U
-    G <-->|Inference Requests| LLM
-```
+    %% Query Flow
+    UI -->|User Question| RRF
+    RRF -->|Vector Query| VS
+    RRF -->|Lexical Query| BM25
+    RRF -->|Fused Top-K Chunks + Citations| G
+    G -->|Streamed Prompt + Context| API
+    API -->|Tokens| UI
+    API -->|Output Text| VER
+    VER -->|Grounding Status Badge| UI
+    API -->|Output Text| FUP
+    FUP -->|3 Follow-up Suggestions| UI
 
-```
-User uploads PDF/DOCX/TXT/CSV
-         ↓
-   Parse text (loader.py)
-         ↓
-   Chunk into 500-word pieces (chunker.py)
-         ↓
-   Embed with sentence-transformers (embedder.py)
-         ↓
-   Store in ChromaDB (vector_store.py)
-         ↓
-   User asks a question
-         ↓
-   Embed query → ChromaDB top-K search (retriever.py)
-         ↓
-   Inject context into GPT OSS 120B prompt
-         ↓
-   Stream response via Groq API ⚡ (groq_client.py)
-         ↓
-   Save to SQLite chat history (helpers.py)
+    %% Storage & Telemetry
+    UI <-->|Sessions, Auth, Analytics| SQL
 ```
 
 ---
@@ -114,68 +146,30 @@ User uploads PDF/DOCX/TXT/CSV
 ## 📁 Project Structure
 
 ```
-rag-chatbot/
-├── app.py                  # Streamlit UI entry point
-├── .env.example            # Environment template
-├── requirements.txt
-├── README.md
-│
+AI-RAG-CHATBOT/
+├── app.py                  # Main Streamlit SaaS Application (Chat, Knowledge Base, Analytics, Settings)
+├── requirements.txt        # Python package dependencies
+├── README.md               # Architecture documentation & setup guide
+├── .env                    # Environment variables (API keys, model configuration)
+├── auth/
+│   ├── auth.py             # Bcrypt password hashing & authentication logic
+│   └── db.py               # SQLite user accounts & authentication database
 ├── rag/
-│   ├── loader.py           # PDF, TXT, DOCX, CSV parser
-│   ├── chunker.py          # Text chunking with overlap
-│   ├── embedder.py         # sentence-transformers embeddings
-│   ├── vector_store.py     # ChromaDB CRUD operations
-│   └── retriever.py        # Top-K semantic retrieval
-│
+│   ├── loader.py           # Multi-format document parser with page extraction
+│   ├── chunker.py          # Sentence-aware text chunker with page metadata
+│   ├── embedder.py         # SentenceTransformers embedding generation
+│   ├── vector_store.py     # ChromaDB vector store operations
+│   ├── hybrid_search.py    # BM25 lexical engine & Reciprocal Rank Fusion (RRF)
+│   ├── retriever.py        # Hybrid retriever, latency measurement & citation builder
+│   └── verifier.py         # Factual grounding and document verification
 ├── llm/
-│   └── groq_client.py      # Groq API + GPT OSS 120B
-│
-├── utils/
-│   └── helpers.py          # SQLite DB, sessions, formatting
-│
-└── data/
-    └── uploads/            # Temporary file storage
+│   └── groq_client.py      # Groq inference, 4 chat modes, follow-up generator, streaming
+└── utils/
+    ├── helpers.py          # SQLite database migrations, sessions, export, analytics telemetry
+    └── session.py          # Streamlit session state management
 ```
 
 ---
 
-## ⚙️ Configuration (.env)
-
-| Variable           | Default                     | Description                  |
-| ------------------ | --------------------------- | ---------------------------- |
-| `GROQ_API_KEY`   | —                          | Your Groq API key (required) |
-| `LLAMA_MODEL`    | `openai/gpt-oss-120b` | Groq model to use            |
-| `EMBED_MODEL`    | `all-MiniLM-L6-v2`        | Sentence transformer model   |
-| `TOP_K_CHUNKS`   | `4`                       | Number of chunks to retrieve |
-| `CHROMA_DB_PATH` | `./chroma_store`          | ChromaDB storage path        |
-
----
-
-## 🧠 Tech Decisions
-
-| Decision                         | Reason                                      |
-| -------------------------------- | ------------------------------------------- |
-| **Groq instead of OpenAI** | Free tier, 10x faster, no credit card       |
-| **GPT OSS 120B**          | Open-source, near GPT-4 quality, free       |
-| **ChromaDB**               | Local vector DB, no external service needed |
-| **SQLite**                 | Zero-config persistence for chat history    |
-| **sentence-transformers**  | Free, runs locally, high quality embeddings |
-
-> 💡 Designed to be easily swappable — replace Groq with OpenAI or Claude by editing `llm/groq_client.py`
-
----
-
-## 🚀 Deployment (Production Upgrade)
-
-```bash
-# Switch SQLite → PostgreSQL: update DB_PATH in utils/helpers.py
-# Deploy on Railway (free tier):
-railway init
-railway up
-```
-
----
-
-## 📝 License
-
-MIT — free to use and modify.
+## 🛡️ License & Technology Attributions
+- Built with [Groq](https://groq.com), [ChromaDB](https://www.trychroma.com/), [SentenceTransformers](https://sbert.net/), and [Streamlit](https://streamlit.io/).
